@@ -13,16 +13,22 @@ $\nabla$  와 $\boldsymbol{V}$ 의 내적의 의미는 유속이 한 점에서 �
 
 
 유체역학에서 오일러 방정식은 비점성 유체의 운동량에 관해 기술한 방정식이다. 오일러 방정식은 뉴턴의 운동 제2법칙으로부터 유도가 가능하다. 뉴턴의 운동 제2법칙은:
-$$\boldsymbol{F}=\boldsymbol{ma}$$
+$$
+\boldsymbol{F}=\boldsymbol{ma}
+$$
 뉴턴의 운동 제2법칙을 유체에도 적용을 해보자. 유속이 $\boldsymbol{u} = (u, v, w)$ 이고, $u, \, v,\,w$ 가 시간 $t$ 에 영향을 받는 변수라고 하면, 유체의 가속도는 다음과 같다.
-$$\begin{align}
+$$
+\begin{align}
 \boldsymbol{a}&=\frac{d\boldsymbol{V}}{dt} = \frac{ \partial \boldsymbol{u} }{ \partial t } + \frac{ \partial \boldsymbol{u} }{ \partial x } \cdot \frac{dx}{dt} + \frac{ \partial \boldsymbol{u} }{ \partial y } \cdot \frac{dy}{dt} +\frac{ \partial \boldsymbol{u} }{ \partial z } \cdot \frac{dz}{dt} \\
 &=\frac{ \partial u }{ \partial t } + \frac{ \partial \boldsymbol{u} }{ \partial x } \cdot u+\frac{ \partial \boldsymbol{u} }{ \partial y } \cdot v +\frac{ \partial \boldsymbol{u} }{ \partial z } \cdot w \\
 &=\frac{\partial\boldsymbol{u}}{\partial t}+\left( u\frac{\partial\boldsymbol{u}}{\partial x}+v\frac{\partial \boldsymbol{u}}{\partial y}+w\frac{\partial \boldsymbol{u}}{\partial z} \right) \\
 &=\frac{\partial \boldsymbol{u}}{\partial t}+(\boldsymbol{u} \cdot \nabla)\boldsymbol{u}
-\end{align}$$
+\end{align}
+$$
 미소 유체 시스템에서 가해지는 힘은 중력과 미소체적 $dx, dy, dz$ 의 표면에 가해지는 힘이 있다. 이를 식으로 나타내면 다음과 같다.
-$$\sum \boldsymbol{F}=\boldsymbol{F}_{grav}+\boldsymbol{F}_{surf}$$
+$$
+\sum \boldsymbol{F}=\boldsymbol{F}_{grav}+\boldsymbol{F}_{surf}
+$$
 중력에 의해 작용하는 힘은 $\boldsymbol{F}_{grav}=\rho \times dxdydz \times \boldsymbol{g}$ 이다. 미소체적 $dx, dy, dz$ 에 작용하는 힘은 두가지가 있다. 하나는 압력에 의한 힘이 있고, 다른 하나는 유체의 점성에 의한 점성력이 있다. 오일러 방정식은 비점성 유체에 관해 기술하므로 미소체적의 표면에 작용하는 힘은 압력에 의한 힘과 같다.
 $$
 d\boldsymbol{F}_{surf}=d\boldsymbol{F}_{pressure}
@@ -64,7 +70,11 @@ $$
 \frac{d\boldsymbol{F}_{z,viscosity}}{dxdydz}=\frac{\partial}{\partial x}(\varepsilon_{xz})+\frac{\partial}{\partial y}(\varepsilon_{yz})+\frac{\partial}{\partial z}(\varepsilon_{zz}) \end{align}
 $$
 미소체적의 점성력에 의한 영향은 점성응력 텐서의 발산항과 그 미소체적의 곱과 같다는 것을 알 수 있다. 미소체적을 제외하고 고려하면: 
-$$\begin{align} \nabla \cdot \varepsilon_{ij} &= \nabla \cdot \mu (\nabla \boldsymbol{u}+(\nabla \boldsymbol{u})^T ) \\ &= \mu \sum_j \frac{\partial}{\partial x_j} \left( \frac{\partial u_i}{\partial x_j} + \frac{\partial u_j}{\partial x_i} \right) \\ &= \mu \left( \nabla^2 u_i + \frac{\partial}{\partial x_i} (\nabla \cdot \mathbf{u}) \right) \end{align}$$
+$$
+\begin{align} 
+ \nabla \cdot \varepsilon_{ij} &= \nabla \cdot \mu (\nabla \boldsymbol{u}+(\nabla \boldsymbol{u})^T ) \\ &= \mu \sum_j \frac{\partial}{\partial x_j} \left( \frac{\partial u_i}{\partial x_j} + \frac{\partial u_j}{\partial x_i} \right) \\ &= \mu \left( \nabla^2 u_i + \frac{\partial}{\partial x_i} (\nabla \cdot \mathbf{u}) \right) 
+\end{align}
+$$
 비압축성 유체에서 $\nabla \cdot \boldsymbol{u}=0$ 이므로, 비압축성 유체에서 점성력은 다음과 같이 정리할 수 있다. 
 $$
 \nabla \cdot \varepsilon \cdot dV= \nabla ^2 \boldsymbol{u} \cdot dV

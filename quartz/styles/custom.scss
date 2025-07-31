@@ -1,3 +1,19 @@
 @use "./base.scss";
 
 // put your custom CSS here!
+/* Blue Topaz-style headers */
+h1 {
+  color: #a6e3a1;
+  font-weight: 700;
+}
+h2 {
+  color: #94e2d5;
+  font-weight: 600;
+}
+h3 {
+  color: #89dceb;
+  font-weight: 600;
+}
+h4, h5, h6 {
+  color: #b4befe;
+}

@@ -1,2 +1,4 @@
---- title: Concrete pancake study blog ---
+---
+title: Concrete pancake study blog
+---
 🚧🚧이사중입니다~🚧🚧

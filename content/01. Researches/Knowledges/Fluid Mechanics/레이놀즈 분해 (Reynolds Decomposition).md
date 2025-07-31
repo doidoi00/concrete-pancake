@@ -49,7 +49,7 @@ $$
 - $\phi$ : 유속, 압력, 온도 등의 임의의 유동 변수
 - $V$ : 평균을 취하는 공간 영역 (예: 관 내부, 층류 경계층의 일부 등)
 - $\langle \cdot \rangle$ : 공간 평균을 의미하는 기호
-<img src="spacial_average.png" width="50%"/>
+<img src="spacial_average.jpg" width="50%"/>
 
 다음의 표는 시간 평균과 공간 평균을 비교한 표이다.
 

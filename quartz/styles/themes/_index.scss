@@ -5787,8 +5787,8 @@ body {
   background-color: var(--background-primary);
   color: var(--text-normal);
   -webkit-tap-highlight-color: #ffffff;
-  user-select: text;
-  -webkit-user-select: text;
+  user-select: none;
+  -webkit-user-select: none;
   caret-color: var(--caret-color);
   --h1-size: 1.5625em;
   --h2-size: 1.4375em;
@@ -7250,4 +7250,8 @@ body {
       )
     )
   ) !important;
+}
+canvas {
+  all: initial;
+  /* 필요하다면 width, height 등만 다시 지정 */
 }

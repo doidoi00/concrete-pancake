@@ -13,8 +13,7 @@ const config: QuartzConfig = {
     enableSPA: true,
     enablePopovers: true,
     analytics: {
-      provider: "google",
-      tagId: "G-HQX5HVENMC",
+      provider: "plausible",
     },
     locale: "ko-KR",
     baseUrl: "https://concrete-pancake.pages.dev",
@@ -24,9 +23,9 @@ const config: QuartzConfig = {
       fontOrigin: "googleFonts",
       cdnCaching: true,
       typography: {
-        header: "'Lexend Deca', system-ui, -apple-system, sans-serif",
-        body: "'Fira Sans', system-ui, -apple-system, sans-serif",
-        code: "'JetBrains Mono', 'SF Mono', Monaco, monospace",
+        header: "Lexend Deca",
+        body: "Fira Sans",
+        code: "JetBrains Mono",
       },
       colors: {
         lightMode: {

@@ -42,13 +42,15 @@ $$
 - $v_{x}$ : $x$ 방향으로 흐르는 유체의 속도
 
 $dV$ 는 유체가 $dt$ 동안 들어오는 유체의 부피이기 때문에, $dt$ 동안 $\rho dV$ 만큼의 유체의 양이 유입한다. 따라서 $u_{x}=\rho v_{x}dydz$ 와 같이 표현할 수 있는 것이다. 따라서 $x$ 축에서의 유입량 식을 모든 방향에서 고려하면 다음과 같다. 
-$$\begin{align}
+$$
+\begin{align}
 u_{x}= \rho v_{x}dydz \quad(x \, \text{축에서 유체의 유입량})\\
 u_{y} = \rho v_{y}dxdz \quad(y \, \text{축에서 유체의 유입량})\\
 u_{z} = \rho v_{z}dxdy\quad(z \, \text{축에서 유체의 유입량}) \\
  \\
 \therefore Net \; mass \; inflow \; rate :\; u_{ijk}=\rho v_{i}dx_{j}dx_{k}
-\end{align}$$
+\end{align}
+$$
 
 ---
 #### 2. 유출량 구하기

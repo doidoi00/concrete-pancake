@@ -13,8 +13,7 @@ const config: QuartzConfig = {
     enableSPA: true,
     enablePopovers: true,
     analytics: {
-      provider: "google",
-      tagId: "G-HQX5HVENMC",
+      provider: "plausible",
     },
     locale: "ko-KR",
     baseUrl: "https://concrete-pancake.pages.dev",

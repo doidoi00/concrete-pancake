@@ -1,11 +1,6 @@
 import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
 
-function isSafari(): boolean {
-  if (typeof navigator === "undefined") return false
-  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-}
-
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
@@ -46,7 +41,7 @@ export const defaultContentPageLayout: PageLayout = {
     Component.Explorer(),
   ],
   right: [
-    ...(!isSafari() ? [Component.Graph()] : []),
+    Component.Graph(),
     Component.DesktopOnly(Component.TableOfContents()),
     Component.Backlinks(),
   ],

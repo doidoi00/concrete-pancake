@@ -5787,8 +5787,8 @@ body {
   background-color: var(--background-primary);
   color: var(--text-normal);
   -webkit-tap-highlight-color: #ffffff;
-  user-select: none;
-  -webkit-user-select: none;
+  user-select: text;
+  -webkit-user-select: text;
   caret-color: var(--caret-color);
   --h1-size: 1.5625em;
   --h2-size: 1.4375em;

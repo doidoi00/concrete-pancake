@@ -24,9 +24,9 @@ const config: QuartzConfig = {
       fontOrigin: "googleFonts",
       cdnCaching: true,
       typography: {
-        header: "Lexend Deca",
-        body: "Fira Sans",
-        code: "JetBrains Mono",
+        header: "'Lexend Deca', system-ui, -apple-system, sans-serif",
+        body: "'Fira Sans', system-ui, -apple-system, sans-serif",
+        code: "'JetBrains Mono', 'SF Mono', Monaco, monospace",
       },
       colors: {
         lightMode: {

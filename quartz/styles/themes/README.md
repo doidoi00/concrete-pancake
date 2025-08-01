@@ -1,11 +1,11 @@
-# Adrenaline
+# Blue Topaz
 
-- Theme: Adrenaline
-- Author: <a href="https://github.com/Spekulucius" target="_blank" rel="noopener noreferrer">Spekulucius</a>
+- Theme: Blue Topaz
+- Author: <a href="https://github.com/whyt-byte" target="_blank" rel="noopener noreferrer">WhyI & Pkmer</a>
 
 ## Preview
 
-[Open live preview](https://quartz-themes.github.io/adrenaline/)
+[Open live preview](https://quartz-themes.github.io/blue-topaz/)
 
 ## Usage
 
@@ -13,7 +13,7 @@
 
 ```yaml
 env:
-  THEME_NAME: adrenaline
+  THEME_NAME: blue-topaz
 ```
 
 ```yaml
@@ -26,7 +26,7 @@ env:
 ```bash
 curl -s -S -o action.sh https://raw.githubusercontent.com/saberzero1/quartz-themes/master/action.sh
 
-./action.sh adrenaline
+./action.sh blue-topaz
 ```
 
 ### Manual install

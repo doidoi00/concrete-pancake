@@ -1,29 +1,3 @@
 @use "./base.scss";
 @use "./themes";
 
-.math.display,
-  mjx-container,
-  mjx-container[display="true"],
-  mjx-container.MathJax,
-.MathJax_Display,
-.MathJax_SVG_Display {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  max-width: 100% !important;
-  white-space: nowrap !important;
-  padding: 0.5em 0 !important;
-  display: block !important;
-  text-align: center !important;
-}
-
-
-mjx-container svg,
-.MathJax_SVG svg {
-  max-width: none !important;
-  height: auto !important;
-}
-mjx-container:not([display="true"]) {
-  display: inline-block !important;
-  max-width: 100% !important;
-  overflow-x: auto !important;
-}

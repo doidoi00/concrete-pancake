@@ -7194,7 +7194,8 @@ body {
   }
 }
 :root:root:root {
-
+  --bodyFont: var(--font-default);
+  --codeFont: var(--font-monospace, var(--font-default));
 }
 :root:root[saved-theme="light"] {
   --highlight-fallback: 258, 88%, 66%;

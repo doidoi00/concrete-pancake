@@ -147,7 +147,7 @@ $$
 >[!formula]  `ReynoldsStressSimple`
 >$$
 >\begin{align}
-\frac{DR_{ik}}{Dt}=P_{ik} +\Pi_{ik}+D^{Turb}_{ik} +D^{\nu}_{ik}-\varepsilon_{ik}
+>\frac{DR_{ik}}{Dt}=P_{ik} +\Pi_{ik}+D^{Turb}_{ik} +D^{\nu}_{ik}-\varepsilon_{ik}
 >\end{align}
 >$$
 

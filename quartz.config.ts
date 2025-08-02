@@ -74,10 +74,35 @@ const config: QuartzConfig = {
       Plugin.Description(),
       Plugin.Latex({
         renderEngine: "mathjax",
-        mathjaxOptions: {
+        mathJaxOptions: {
           tex: {
             packages: { "[+]": ["cancel"] },
           },
+          chtml: {
+            displayAlign: "left",
+            displayIndent: "0",
+          },
+          startup: {
+            ready() {
+              const { MathJax } = this;
+              MathJax.startup.defaultReady();
+              const style = document.createElement('style');
+              style.textContent = `
+                .MathJax_Display {
+                  overflow-x: auto !important;
+                  overflow-y: hidden !important;
+                  max-width: 100% !important;
+                  padding: 0.5em 0 !important;
+                }
+                mjx-container[jax="CHTML"][display="true"] {
+                  overflow-x: auto !important;
+                  overflow-y: hidden !important;
+                  max-width: 100% !important;
+                  display: block !important;
+                }`;
+              document.head.appendChild(style);
+            }
+          }
         },
       }),
     ],

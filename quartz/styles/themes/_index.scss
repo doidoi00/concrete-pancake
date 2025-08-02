@@ -5576,7 +5576,6 @@ html[saved-theme="light"] {
 }
 html {
   font-size: 16px;
-  font-family: var(--font-family);
   font-family: var(--bodyFont);
 }
 body {
@@ -7195,7 +7194,7 @@ body {
   }
 }
 :root:root:root {
-  --bodyFont: var(--font-default) !important;
+  font-family: var(--font-default) !important;
   --codeFont: var(--font-monospace, var(--font-default)) !important;
 }
 :root:root[saved-theme="light"] {

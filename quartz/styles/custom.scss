@@ -22,3 +22,8 @@ mjx-container svg,
   max-width: none !important;
   height: auto !important;
 }
+mjx-container:not([display="true"]) {
+  display: inline-block !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}

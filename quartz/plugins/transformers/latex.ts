@@ -59,29 +59,6 @@ export const Latex: QuartzTransformerPlugin<Partial<Options>> = (opts) => {
               },
             ],
           }
-        case "mathjax":
-          return {
-            css: [{
-              content: `
-                .MathJax_SVG_Display {
-                  overflow-x: auto;
-                  overflow-y: hidden;
-                  max-width: 100%;
-                }
-                .MathJax_SVG {
-                  overflow-x: auto;
-                  overflow-y: hidden;
-                  max-width: 100%;
-                }
-                mjx-container[display="true"] {
-                  overflow-x: auto;
-                  overflow-y: hidden;
-                  max-width: 100%;
-                }
-              `,
-              inline: true
-            }]
-          }
       }
     },
   }

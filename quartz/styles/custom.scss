@@ -2,9 +2,11 @@
 @use "./themes";
 
 .math.display,
-mjx-container[display="true"],
-mjx-container.MathJax[display="true"],
-.MathJax_Display {
+  mjx-container,
+  mjx-container[display="true"],
+  mjx-container.MathJax,
+.MathJax_Display,
+.MathJax_SVG_Display {
   overflow-x: auto !important;
   overflow-y: hidden !important;
   max-width: 100% !important;
@@ -12,13 +14,10 @@ mjx-container.MathJax[display="true"],
   padding: 0.5em 0 !important;
   display: block !important;
 }
-.MathJax_SVG {
-  overflow-x: auto;
-  overflow-y: hidden;
-  max-width: 100%;
-}
-mjx-container[display="true"] {
-  overflow-x: auto;
-  overflow-y: hidden;
-  max-width: 100%;
+
+
+mjx-container svg,
+.MathJax_SVG svg {
+  max-width: none !important;
+  height: auto !important;
 }

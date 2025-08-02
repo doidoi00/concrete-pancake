@@ -7194,7 +7194,7 @@ body {
   }
 }
 :root:root:root {
-  --bodyFont: var(--font-text-theme, var(--font-default)) !important;
+  --font-family: var(--font-default) !important;
   --codeFont: var(--font-monospace, var(--font-default)) !important;
 }
 :root:root[saved-theme="light"] {

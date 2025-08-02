@@ -101,6 +101,17 @@ const config: QuartzConfig = {
                   display: block !important;
                 }`;
               document.head.appendChild(style);
+
+              MathJax.startup.document.updateDocument = function() {
+                return MathJax.startup.document.constructor.prototype.updateDocument.call(this).then(() => {
+                  document.querySelectorAll('mjx-container[display="true"]').forEach(container => {
+                    if (container instanceof HTMLElement) {
+                      container.style.overflowX = 'auto';
+                      container.style.maxWidth = '100%';
+                    }
+                  });
+                });
+              };
             }
           }
         },

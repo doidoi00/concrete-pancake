@@ -76,7 +76,7 @@ const config: QuartzConfig = {
         renderEngine: "mathjax",
         mathJaxOptions: {
           tex: {
-            packages: { "[+]": ["cancel"] },
+            packages: { "[+]": ["cancel", "ams", "amsmath", "amssymb"] },
           },
           chtml: {
             displayAlign: "left",

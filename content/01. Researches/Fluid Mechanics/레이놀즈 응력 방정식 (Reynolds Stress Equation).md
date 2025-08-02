@@ -32,7 +32,7 @@ $$
 \Leftrightarrow \quad&  \frac{ \partial \overline{u_{i}} }{ \partial t } +\frac{ \partial u'_{i} }{ \partial t }   +\frac{ \partial  }{ \partial x_{j} } (\overline{u_{j}}\overline{u_{i}}+\overline{u_{j}}u'_{i}+u'_{j}\overline{u_{i}} +u'_{j}u'_{i}) =-\frac{1}{\rho}\frac{ \partial \left( \overline{p}+p' \right)  }{ \partial x_{i} } +\frac{\mu}{\rho} \frac{ \partial^{2}  }{ \partial x_{j}^{2} } \left( \overline{u_{j}}+u'_{j} \right) \tag{2}
 \end{align}
 $$
-(1)식에 RANS를 빼면 다음과 같다.
+(2)식에 RANS를 빼면 다음과 같다.
 $$
 \begin{align}
  &\frac{ \partial u'_{i} }{ \partial t } + \frac{ \partial  }{ \partial x_{j} } \left( \overline{u_{j}}u'_{i}+u'_{j}\overline{u'_{i}}+u'_{j}u'_{i} \right) =-\frac{1}{\rho}\frac{ \partial p' }{ \partial x_{i} } +\frac{\mu}{\rho} \frac{ \partial^{2} u'_{j} }{ \partial x_{j}^{2} } +\frac{ \partial\overline{u'_{j}u'_{i}} }{ \partial x_{j} }  \\

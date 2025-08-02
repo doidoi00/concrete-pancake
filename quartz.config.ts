@@ -77,7 +77,7 @@ const config: QuartzConfig = {
         renderEngine: "mathjax",
         mathJaxOptions: {
           tex: {
-            packages: { "[+]": ["cancel", "ams", "amsmath", "amssymb"] },
+            packages: { "[+]": ["cancel", "ams", "amsmath", "amssymb", "bm", "boldsymbol", "physics", "mathtools", "amsthm", "array", "cases", "empheq", "gensymb", "mathrsfs", "siunitx", "upgreek", "unicode"] },
           },
         },
       }),

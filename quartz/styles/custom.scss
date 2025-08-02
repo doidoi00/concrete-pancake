@@ -15,7 +15,6 @@ article {
   }
 }
 
-// 테이블 컨테이너 full-width 중앙 정렬
 .table-container {
   width: 100% !important;
   margin: 0 auto !important;
@@ -24,6 +23,10 @@ article {
   & > table {
     margin: 1rem auto !important;
     width: 100% !important;
+    
+    th {
+      text-align: center !important;
+    }
   }
 }
 

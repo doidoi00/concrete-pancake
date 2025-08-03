@@ -55,7 +55,7 @@ $$
 ><img src="turb_fig.png"/>
 ><figcaption align="center"><b>Sequence of turbulence  transport</b> </figcaption>
 
-### 1. 난류의 시간에 따른 변화(Time rate of change of $k$)
+### 1. 난류의 시간에 따른 변화(Time rate of change of $k$)
 $$
 \text{Unsteady term}\;:\frac{ \partial k }{ \partial t } 
 $$

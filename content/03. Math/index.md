@@ -1,3 +1,3 @@
 ---
-title: Contents
+title: Math
 ---

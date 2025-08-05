@@ -6,7 +6,7 @@
 \begin{document}
 
 \begin{tikzpicture}
-\begin{axis}[colormap/viridis]
+\begin{axis}
 \addplot3[
 	surf,
 	samples=18,

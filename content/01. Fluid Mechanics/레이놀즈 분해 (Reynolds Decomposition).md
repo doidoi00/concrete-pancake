@@ -40,8 +40,10 @@ $$
 $$
 - $N$ : 측정한 샘플 수
 - $t_{i}$ : 각 시간 점
-<img src="time_average.png" width="50%" />
----
+
+<img src="turbvel.png" align="center" width="50%"/>
+	<figcaption align="center">그림은 1000개의 혼돈스러운 속도 성분의 순간적인 측정을 보여준다.</figcaption>
+
 반면에 공간에 따라 측정할 때에는 **시간을 고정하고 그 공간 전체에서 평균**을 내게 되는데, 대표적으로 파이프를 타고 이동하는 유체의 유량을 측정할 때 사용한다. 특히 파이프처럼 하나의 축을 기준으로 일정하게 유체가 흐를 때 공간 평균이 유용한데, 단면에 흐르는 유체의 속도가 위치마다 다른 상황에서 이를 공간으로 평균을 내어 공간 전체에서의 단일한 유속을 얻을 수 있다. 어떤 물리량 $\phi(\mathbf{x},t)$ 가 공간 상에 분포할 때, 그 공간 평균은 다음과 같이 정의된다:
 $$
 \langle \phi \rangle = \frac{1}{V} \int_V \phi(\mathbf{x}, t)\, dV
@@ -49,7 +51,7 @@ $$
 - $\phi$ : 유속, 압력, 온도 등의 임의의 유동 변수
 - $V$ : 평균을 취하는 공간 영역 (예: 관 내부, 층류 경계층의 일부 등)
 - $\langle \cdot \rangle$ : 공간 평균을 의미하는 기호
-<img src="spacial_average.jpg" width="50%"/>
+<img src="spacial_average.jpg" align="center"width="50%"/>
 
 다음의 표는 시간 평균과 공간 평균을 비교한 표이다.
 
@@ -59,6 +61,7 @@ $$
 | 수식   | $\bar{\phi} = \frac{1}{T} \int_{t_0}^{t_0+T} \phi(t) dt$ | $\langle \phi \rangle = \frac{1}{V} \int_V \phi(\mathbf{x}) dV$ |
 | 사용 예 | 실험 측정 데이터 평균화                                            | 이론적/수치 해석에서 균일 유동 가정시                                           |
 | 장점   | 센서가 한 위치에서 쉽게 계측                                         | 유동이 주어진 방향으로 균일할 때 빠르게 처리 가능                                    |
+|      |                                                          |                                                                 |
 
 ---
 
@@ -141,10 +144,10 @@ $$
 ### 8. 미분과 평균의 교환 조건
 - 시간 평균 또는 공간 평균과 미분 연산은 일반적으로 교환 가능하다.
 
->**시간 평균과 시간 미분:
+>[!todo] **시간 평균과 시간 미분:**
 >$$\overline{ \frac{d\phi}{dt} } = \frac{d}{dt} \overline{\phi} \quad \text{(평균이 시간에 따라 변하면)}$$
 
->**공간 평균과 미분:
+>[!todo] **공간 평균과 미분:**
 >$$\overline{ \frac{\partial \phi}{\partial x} } = \frac{\partial}{\partial x} \overline{\phi} \quad \text{(단, 불균일 경계조건이 있으면 성립하지 않을 수 있음.)}$$
 ---
 

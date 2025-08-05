@@ -81,6 +81,9 @@ const config: QuartzConfig = {
           },
         },
       }),
+      Plugin.TikZJax({
+        enableTikZJax: true,
+      }),
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [

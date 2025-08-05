@@ -102,6 +102,7 @@ export default (() => {
             return resource
           }
         })}
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/node-tikzjax@latest/css/fonts.css" />
       </head>
     )
   }

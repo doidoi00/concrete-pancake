@@ -5,10 +5,10 @@ title: Concrete pancake study blog
 
 # Contents
 
-## [[content/01. Fluid Mechanics/index|🌊 Fluid Mechanics]]
+## [[01. Fluid Mechanics/index|🌊 Fluid Mechanics]]
 
-## [[content/02. Obisidian/index|💎 Obsidian]]
+## [[02. Obisidian/index|💎 Obsidian]]
 
-## [[content/04. Codes/index|🧑🏻‍💻 Codes]]
+## [[04. Codes/index|🧑🏻‍💻 Codes]]
 
-## [[content/03. Math/index|✍🏻 Math]]
+## [[03. Math/index|✍🏻 Math]]

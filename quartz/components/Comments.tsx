@@ -15,6 +15,7 @@ type Options = {
     darkTheme?: string
     mapping?: "url" | "title" | "og:title" | "specific" | "number" | "pathname"
     strict?: boolean
+    theme?: string
     reactionsEnabled?: boolean
     inputPosition?: "top" | "bottom"
     lang?: string
@@ -48,6 +49,7 @@ export default ((opts: Options) => {
         data-input-position={opts.options.inputPosition ?? "bottom"}
         data-light-theme={opts.options.lightTheme ?? "light"}
         data-dark-theme={opts.options.darkTheme ?? "dark"}
+        data-theme={opts.options.themeUrl ? "preferred_color_scheme"}
         data-theme-url={
           opts.options.themeUrl ?? `https://${cfg.baseUrl ?? "example.com"}/static/giscus`
         }

@@ -8,6 +8,7 @@ title: Concrete pancake study blog
 ## [[content/🌊 Fluid Mechanics/index|🌊 Fluid Mechanics]]
 
 ## [[content/💎 Obisidian/index|💎 Obsidian]]
+test[[난류 운동 에너지 수송 방정식 (Turbulent Kinetic Energy Transport Equation)|test]]
 
 ## [[content/🧑🏻‍💻 Codes/index|🧑🏻‍💻 Codes]]
 

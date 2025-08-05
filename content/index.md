@@ -11,4 +11,4 @@ title: Concrete pancake study blog
 
 ## [[content/🧑🏻‍💻 Codes/index|🧑🏻‍💻 Codes]]
 
-## [[content/1️⃣ Math/index|1️⃣ Math]]
+## [[content/✍🏻 Math/index|✍🏻 Math]]

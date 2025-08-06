@@ -41,14 +41,14 @@ const defaultOptions: Options = {
 
 function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndexMap): string {
   const base = cfg.baseUrl ?? ""
-  const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => `<url>
+  const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => `<sitemap>
     <loc>https://${joinSegments(base, encodeURI(slug))}</loc>
     ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
-  </url>`
+  </sitemap>`
   const urls = Array.from(idx)
     .map(([slug, content]) => createURLEntry(simplifySlug(slug), content))
     .join("")
-  return `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls}</urlset>`
+  return `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls}</sitemapindex>`
 }
 
 function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndexMap, limit?: number): string {

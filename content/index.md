@@ -1,7 +1,7 @@
 ---
 title: Concrete Pancake study blog
 ---
-박사과정을 향해 가는 중에 주운 지식드ㄹ 무턱대고 쌓아두는 아카이브 입니다!
+학부연구생을 하면서 주운 지식들을 쌓아두는 아카이브 입니다!
 
 # Contents
 

@@ -44,7 +44,7 @@ function generateRobotsTxt(cfg: GlobalConfiguration): string {
   return [
     "User-agent: *",
     "Allow: /",
-    `Sitemap: https://${base}/sitemap.xml`,
+    `Sitemap: ${base}/sitemap.xml`,
   ].join("\n")
 }
 

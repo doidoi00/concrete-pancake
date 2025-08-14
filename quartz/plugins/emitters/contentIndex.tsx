@@ -41,20 +41,15 @@ const defaultOptions: Options = {
 
 function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndexMap): string {
   const base = cfg.baseUrl ?? ""
-  const path = require("path")
   const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => {
-    if (path.basename(slug) != "") {
-      return `<url>
-    <loc>${joinSegments(base, encodeURI(slug))}.html</loc>
-    ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
-  </url>`
-    }
-    else {
-      return `<url>
-    <loc>${joinSegments(base, encodeURI(slug))}index.html</loc>
-    ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
-  </url>`
-    }
+    const url =
+      slug.endsWith("/")
+        ? `${joinSegments(base, encodeURI(slug))}index.html`
+        : `${joinSegments(base, encodeURI(slug))}.html`
+    return `<url>
+      <loc>${url}</loc>
+      ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
+    </url>`
   }
   const urls = Array.from(idx)
     .map(([slug, content]) => createURLEntry(simplifySlug(slug), content))

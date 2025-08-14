@@ -39,6 +39,15 @@ const defaultOptions: Options = {
   includeEmptyFiles: true,
 }
 
+function generateRobotsTxt(cfg: GlobalConfiguration): string {
+  const base = cfg.baseUrl ?? ""
+  return [
+    "User-agent: *",
+    "Allow: /",
+    `Sitemap: https://${base}/sitemap.xml`,
+  ].join("\n")
+}
+
 function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndexMap): string {
   const base = cfg.baseUrl ?? ""
   const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => {
@@ -131,6 +140,12 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
           content: generateSiteMap(cfg, linkIndex),
           slug: "sitemap" as FullSlug,
           ext: ".xml",
+        })
+        yield write({
+          ctx,
+          content: generateRobotsTxt(cfg),
+          slug: "robots" as FullSlug,
+          ext: ".txt",
         })
       }
 

@@ -41,10 +41,21 @@ const defaultOptions: Options = {
 
 function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndexMap): string {
   const base = cfg.baseUrl ?? ""
-  const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => `<url>
+  const path = require("path")
+  const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => {
+    if (path.basename(slug) != "") {
+      return `<url>
     <loc>${joinSegments(base, encodeURI(slug))}.html</loc>
     ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
   </url>`
+    }
+    else {
+      return `<url>
+    <loc>${joinSegments(base, encodeURI(slug))}index.html</loc>
+    ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
+  </url>`
+    }
+  }
   const urls = Array.from(idx)
     .map(([slug, content]) => createURLEntry(simplifySlug(slug), content))
     .join("")

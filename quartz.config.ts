@@ -24,8 +24,8 @@ const config: QuartzConfig = {
       fontOrigin: "googleFonts",
       cdnCaching: true,
       typography: {
-        header: "Noto Sans CJK KR",
-        body: "Noto Sans CJK KR",
+        header: "Noto Sans KR",
+        body: "Noto Sans KR",
         code: "Google Sans Code",
       },
       colors: {

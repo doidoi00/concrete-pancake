@@ -5996,6 +5996,10 @@ html {
 
       background-color: var(--admonition-bg-color);
     }
+    &[data-callout="code"] {
+      --callout-color: var(--callout-code);
+
+      background-color: var(--admonition-bg-color);
   }
 
   .callout-title {

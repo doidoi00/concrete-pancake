@@ -35,10 +35,7 @@ export const TikZJax: QuartzTransformerPlugin<Partial<Options>> = (opts) => {
                 
                 const promise = (async () => {
                   try {
-                    const fullCode = `
-\documentclass{standalone}
-${tikzCode}`
-                    const dvi = await tex(fullCode, { showConsole: true })
+                    const dvi = await tex(tikzCode, { showConsole: true })
                     const svg = await dvi2svg(dvi)
                     const svgWithClass = svg.replace(/<svg /, '<svg class="tikzjax-svg" ')
 

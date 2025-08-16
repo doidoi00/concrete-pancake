@@ -366,7 +366,7 @@ TikZ의 레이어 시스템은 요소들이 수동적인 Z-순서 지정 없이 
 > [!code]
 > ```
 > \begin{tikzpicture}
-> \begin{axis}},
+> \begin{axis}[
 >     ylabel={Solubility [g per 100 g water]},
 >     xmin=0, xmax=100,
 >     ymin=0, ymax=120,
@@ -495,26 +495,6 @@ TikZ의 레이어 시스템은 요소들이 수동적인 Z-순서 지정 없이 
 >\end{tikzpicture}
 >```
 
-```tikz
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.16}
-\begin{document}
-\begin{tikzpicture}
-\begin{axis}[stack plots=y,area style,enlarge x limits=false,]
-\addplot coordinates {
-(0,1) (1,1) (2,2) (3,2)
-}\closedcycle;
-\addplot coordinates {
-(0,1) (1,1) (2,2) (3,2)
-}\closedcycle;
-\addplot coordinates {
-(0,1) (1,1) (2,2) (3,2)
-}\closedcycle;
-\end{axis}
-\end{tikzpicture}
-\end{document}
-```
-
 - **화살표 플롯 (`quiver`)**: `u`, `v`, `w` 구성 요소를 사용하여 벡터 필드를 나타내는 작은 화살표를 그립니다.
 
 > [!code]
@@ -606,25 +586,6 @@ TikZ의 레이어 시스템은 요소들이 수동적인 Z-순서 지정 없이 
 >    \end{axis}
 >\end{tikzpicture}
 > ```
-
-```tikz
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.16}
-\begin{document}
-\begin{tikzpicture}
-   \begin{axis}
-    \addplot3[
-        surf,
-    ]
-    coordinates {
-    (0,0,0) (0,1,0) (0,2,0)
-    (1,0,0) (1,1,0.6) (1,2,0.7)
-    (2,0,0) (2,1,0.7) (2,2,1.8)
-    };
-   \end{axis}
-\end{tikzpicture}
-\end{document}
-```
 
 - **등고선 플롯 (`contour gnuplot`)**: 등고선을 생성하며, 종종 `gnuplot`과 같은 외부 프로그램의 사전 계산이 필요합니다. `view={0}{90}`은 위에서 본 시점을 설정합니다. 
 

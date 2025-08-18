@@ -137,18 +137,35 @@ function parseMeta(info, metaStr) {
 function buildTex(tikzCode, meta) {
   const engine = (meta.engine || '').toLowerCase() // '', 'xe', 'pdf', etc.
 
-  const hasDoc = /\\begin{document}|\\documentclass/.test(tikzCode)
-  if (hasDoc) {
-    return { texContent: normalizeNewlines(tikzCode), engine: engine || 'raw'}
+const code = normalizeNewlines(tikzCode)
+  const hasBegin = /\\begin{document}/.test(code)
+  const hasClass = /\\documentclass/.test(code)
+
+  // Case 1: full document already (has \documentclass)
+  if (hasClass) {
+    return { texContent: code, engine: engine || 'tectonic' }
   }
 
+  // Case 2: has \begin{document} but missing \documentclass → prepend ONLY documentclass
+  if (hasBegin && !hasClass) {
+    const tex = [
+      '\\documentclass[tikz]{standalone}',
+      code,
+      '',
+    ].join('\n')
+    return { texContent: tex, engine: engine || 'tectonic' }
+  }
+
+  // Case 3: bare tikz snippet → build minimal standalone wrapper
   const preambleLines = []
+  // Project policy: preamble contains ONLY documentclass (no pgfplots/kotex/compat)
   preambleLines.push('\\documentclass[tikz]{standalone}')
-  if (engine === 'xe') preambleLines.push('\\usepackage{kotex}')
 
   const tex = [
     preambleLines.join('\n'),
-    normalizeNewlines(tikzCode),
+    '\\begin{document}',
+    code,
+    '\\end{document}',
     '',
   ].join('\n')
 

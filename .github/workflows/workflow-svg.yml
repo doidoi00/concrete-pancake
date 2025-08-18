@@ -64,7 +64,11 @@ jobs:
         run: |
           mkdir -p static/tikz
           node quartz/util/tikz-extract.mjs
-          npm run tikz || true
+          npm run tikz:pdf:tectonic
+          npm run tikz:svg
+
+      - name: Optimize SVGs (svgo)
+        run: npx svgo -f static/tikz --multipass
 
       # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
       - name: Commit SVG artifacts

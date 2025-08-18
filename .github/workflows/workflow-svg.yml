@@ -62,7 +62,7 @@ jobs:
       - name: Build SVGs from tikz
         run: |
           mkdir -p static/tikz
-          node tools/tikz-extract.mjs
+          node quartz/util/tikz-extract.mjs
           npm run tikz || true
 
       # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)

@@ -3,6 +3,8 @@ import { visit } from "unist-util-visit"
 import { Root, Code } from "mdast"
 import { load, tex, dvi2svg } from 'node-tikzjax'
 
+let tikzLoaded: Promise<void> | null = null
+
 
 interface Options {
   enableTikZJax: boolean
@@ -23,7 +25,10 @@ export const TikZJax: QuartzTransformerPlugin<Partial<Options>> = (opts) => {
           return async (tree: Root) => {
             if (!enableTikZJax) return
 
-            await load()
+            if (!tikzLoaded) {
+              tikzLoaded = load()
+            }
+            await tikzLoaded
             
             const tasks: { index: number; parent: any; tikzCode: string }[] = []
 

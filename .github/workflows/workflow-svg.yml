@@ -28,7 +28,14 @@ jobs:
       # Node가 꼭 필요하진 않지만, svgo나 스크립트를 쓸 수 있게 세팅
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          check-latest: true
+
+      - name: Ensure npm >= 10.9.2
+        run: |
+          npm -v
+          npm i -g npm@^10.9.2
+          npm -v
 
       # (선택) 패키지 설치: package.json에 svgo/chokidar-cli가 있다면
       - name: Install deps (optional)

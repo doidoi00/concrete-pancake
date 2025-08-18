@@ -552,7 +552,19 @@ TikZ의 레이어 시스템은 요소들이 수동적인 Z-순서 지정 없이 
 \pgfplotsset{compat=1.16}
 \begin{document}
 \begin{tikzpicture}
-\draw (0,0) -- (1,1);
+\begin{axis}[
+    title=Example using the mesh parameter,
+    hide axis,
+    colormap/cool,
+]
+\addplot3[
+    mesh,
+    samples=50,
+    domain=-8:8,
+]
+{sin(deg(sqrt(x^2+y^2)))/sqrt(x^2+y^2)};
+\addlegendentry{\(\frac{sin(r)}{r}\)}
+\end{axis}
 \end{tikzpicture}
 \end{document}
 ```

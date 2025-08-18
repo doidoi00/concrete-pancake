@@ -1,0 +1,61 @@
+name: tikz-to-svg (prebuild)
+
+on:
+  push:
+    branches: [ main ]
+    # 티크스 혹은 문서만 바뀔 때 동작 (원하면 범위를 줄이거나 늘리면 됨)
+    paths:
+      - 'tikz/**'
+      - 'content/**'
+      - '!static/tikz/**'   # 산출물 자체 변경만으로는 트리거하지 않기
+
+jobs:
+  svg:
+    # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: tikz-svg-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node가 꼭 필요하진 않지만, svgo나 스크립트를 쓸 수 있게 세팅
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # (선택) 패키지 설치: package.json에 svgo/chokidar-cli가 있다면
+      - name: Install deps (optional)
+        run: |
+          if [ -f package.json ]; then
+            npm ci || true
+          fi
+
+      # Tectonic(LaTeX 엔진) 설치
+      - uses: wtfjoke/setup-tectonic@v2
+
+      # PDF→SVG 변환기 + CJK 폰트
+      - name: Install dvisvgm & gs & fonts
+        run: sudo apt-get update && sudo apt-get install -y dvisvgm ghostscript fonts-noto-cjk
+
+      # ★ 여기서 "SVG만" 만든다: .tex → .pdf → .svg → svgo
+      #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)
+      - name: Build SVGs from tikz
+        run: |
+          mkdir -p static/tikz
+          node tools/tikz-extract.mjs
+          npm run tikz || true
+
+      # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
+      - name: Commit SVG artifacts
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(svg): update tikz SVGs [skip ci]"
+          file_pattern: |
+            static/tikz/**/*.svg
+            tikz/**/*.pdf
+          push_options: --no-verify
+
+      # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행

@@ -17,7 +17,12 @@
     "check": "tsc --noEmit && npx prettier . --check",
     "format": "npx prettier . --write",
     "test": "tsx --test",
-    "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1"
+    "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
+    "tikz:pdf:tectonic": "find tikz -name '*.tex' -print0 | xargs -0 -n1 -I{} sh -c 'dir=\"$(dirname \"{}\")\"; tectonic -X compile --keep-intermediates --outdir \"$dir\" \"{}\"'",
+    "tikz:svg": "mkdir -p static/tikz && find tikz -name '*.pdf' -print0 | xargs -0 -n1 -I{} sh -c 'base=\"$(basename \"{}\" .pdf)\"; dvisvgm --pdf -n -a -o \"static/tikz/${base}.svg\" \"{}\"'",
+    "tikz:opt": "svgo -f static/tikz --config='{\"multipass\": true}'",
+    "tikz:extract": "node tools/tikz-extract.mjs",
+    "tikz": "npm run tikz:pdf:tectonic && npm run tikz:svg && npm run tikz:opt"
   },
   "engines": {
     "npm": ">=10.9.2",

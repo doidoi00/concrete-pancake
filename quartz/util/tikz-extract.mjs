@@ -292,19 +292,32 @@ function makeDarkVariant(svg) {
   // Ensure we only flip pure black to white
   const blackHex = /#000000\b|#000\b|black\b/gi
 
-  // 1) Text/tspan: force fill to white if currently black (attribute or inline style)
-  out = out.replace(/(<(?:text|tspan)\b[^>]*\bfill=")(#000000|#000|black)("[^>]*>)/gi, '$1#fff$3')
-  out = out.replace(/(<(?:text|tspan)\b[^>]*\bstyle="[^"]*?fill:\s*)(#000000|#000|black)(;?)/gi, '$1#fff$3')
+  // 1) Text/tspan: flip explicit black fills to white (attributes or inline style, both quote types)
+  out = out
+    .replace(/(<(?:text|tspan)\b[^>]*\bfill=")(#000000|#000|black)("[^>]*>)/gi, '$1#fff$3')
+    .replace(/(<(?:text|tspan)\b[^>]*\bfill=')(#000000|#000|black)('[^>]*>)/gi, '$1#fff$3')
+    .replace(/(<(?:text|tspan)\b[^>]*\bstyle="[^"]*?fill:\s*)(#000000|#000|black)(;?)/gi, '$1#fff$3')
+    .replace(/(<(?:text|tspan)\b[^>]*\bstyle='[^']*?fill:\s*)(#000000|#000|black)(;?)/gi, '$1#fff$3')
+    .replace(/(<(?:text|tspan)\b[^>]*\bfill=")rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)("[^>]*>)/gi, '$1#fff$2')
+    .replace(/(<(?:text|tspan)\b[^>]*\bfill=')rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)('[^>]*>)/gi, '$1#fff$2')
+    .replace(/(<(?:text|tspan)\b[^>]*\bstyle="[^"]*?fill:\s*)rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(;?)/gi, '$1#fff$2')
+    .replace(/(<(?:text|tspan)\b[^>]*\bstyle='[^']*?fill:\s*)rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(;?)/gi, '$1#fff$2')
 
   // 2) Any element with black stroke → white stroke
   out = out.replace(/(\bstroke=")(#000000|#000|black)(")/gi, '$1#fff$3')
   out = out.replace(/(style="[^"]*?stroke:\s*)(#000000|#000|black)(;?)/gi, '$1#fff$3')
 
   // 3) Some generators use rgb(0,0,0)
-  out = out.replace(/(\bstroke=")rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(")/gi, '$1#fff$2')
-  out = out.replace(/(style="[^"]*?stroke:\s*)rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(;?)/gi, '$1#fff$2')
-  out = out.replace(/(<(?:text|tspan)\b[^>]*\bfill=")rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)("[^>]*>)/gi, '$1#fff$2')
-  out = out.replace(/(<(?:text|tspan)\b[^>]*\bstyle="[^"]*?fill:\s*)rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(;?)/gi, '$1#fff$2')
+  // 3) Any element with black stroke → white stroke (attribute/style, both quote types, incl. rgb())
+  out = out
+    .replace(/(\bstroke=")(#000000|#000|black)(")/gi, '$1#fff$3')
+    .replace(/(\bstroke=')(#000000|#000|black)(')/gi, '$1#fff$3')
+    .replace(/(style="[^"]*?stroke:\s*)(#000000|#000|black)(;?)/gi, '$1#fff$3')
+    .replace(/(style='[^']*?stroke:\s*)(#000000|#000|black)(;?)/gi, '$1#fff$3')
+    .replace(/(\bstroke=")rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(")/gi, '$1#fff$2')
+    .replace(/(\bstroke=')rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(')/gi, '$1#fff$2')
+    .replace(/(style="[^"]*?stroke:\s*)rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(;?)/gi, '$1#fff$2')
+    .replace(/(style='[^']*?stroke:\s*)rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(;?)/gi, '$1#fff$2')
 
   return out
 }

@@ -58,7 +58,7 @@ jobs:
       - name: Install dvisvgm & gs & fonts
         run: sudo apt-get update && sudo apt-get install -y dvisvgm ghostscript fonts-noto-cjk
 
-      # ★ 여기서 "SVG만" 만든다: .tex → .pdf → .svg → svgo
+      # Generate SVG .tex → .pdf → .svg → svgo
       #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)
       - name: Build SVGs from tikz
         run: |
@@ -69,11 +69,6 @@ jobs:
 
       - name: Optimize SVGs (svgo)
         run: npx svgo -f quartz/static/tikz --multipass
-
-      - name: Build dark SVG variants (-dark)
-        run: |
-          # Generate -dark.svg copies by flipping black text/strokes to white
-          node quartz/util/tikz-extract.mjs --post-dark
 
       - name: Stash working tree (incl. untracked)
         run: git stash push -u -m "prebuild-stash"

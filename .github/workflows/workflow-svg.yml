@@ -88,6 +88,6 @@ jobs:
           branch: publish
           commit_message: "chore(svg): update tikz SVGs"
           add_options: -f
-          push_options: --no-verify
+          push_options: --force-with-lease
 
       # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행

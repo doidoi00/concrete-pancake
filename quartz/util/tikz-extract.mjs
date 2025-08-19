@@ -3,7 +3,7 @@
  * tikz-extract: Scan Markdown, extract ```tikz code blocks → .tex (standalone),
  * replace blocks with image links to /tikz/<hash>.svg.
  *
- * Usage:  node tools/tikz-extract.mjs [--content content] [--tikz tikz] [--static static/tikz]
+ * Usage:  node tools/tikz-extract.mjs [--content content] [--tikz tikz] [--static quartz/static/tikz]
  *
  * Notes:
  * - Hash = sha1(preamble + tikzCode + engine + compat + border).
@@ -17,13 +17,13 @@ import crypto from 'crypto'
 import process from 'process'
 import { unified } from 'unified'
 import remarkParse from 'remark-parse'
-import remarkStringify from 'remark-stringify'
+import remarkFrontmatter from 'remark-frontmatter'
 import { visit } from 'unist-util-visit'
 
 const argv = new Map(Object.entries(parseArgs(process.argv.slice(2))))
 const CONTENT_DIR = argv.get('content') || 'content'
 const TIKZ_DIR = argv.get('tikz') || 'tikz'
-const STATIC_TIKZ_DIR = argv.get('static') || path.join('static', 'tikz')
+const STATIC_TIKZ_DIR = argv.get('quartz') || path.join('quartz', 'static', 'tikz')
 
 await fs.mkdir(TIKZ_DIR, { recursive: true })
 await fs.mkdir(STATIC_TIKZ_DIR, { recursive: true })
@@ -34,16 +34,21 @@ let changedFiles = 0
 
 for (const file of mdFiles) {
   const original = await fs.readFile(file, 'utf8')
-  const tree = unified().use(remarkParse).parse(original)
+  const tree = unified()
+    .use(remarkParse)
+    .use(remarkFrontmatter, ['yaml', 'toml'])
+    .parse(original)
 
-  /** Collect edits before mutating the tree to keep indexing simple */
+  /** Collect edits (with raw offsets) before mutating text */
   const edits = []
+
+  // Precompute line offsets to map line/column → absolute offset when needed
+  const lineOffsets = buildLineOffsets(original)
 
   visit(tree, 'code', (node, index, parent) => {
     if (!parent || typeof index !== 'number') return
     if (!node.lang) return
 
-    // Accept forms: "tikz", "tikz:xe", or metadata like: tikz engine=xe compat=1.18 border=0pt alt="..."
     const info = String(node.lang).trim()
     const isTikz = info === 'tikz' || info.startsWith('tikz')
     if (!isTikz) return
@@ -54,29 +59,45 @@ for (const file of mdFiles) {
 
     const { texContent, engine } = buildTex(tikzCode, meta)
     const hash = shortHash(`${engine}|${texContent}`)
-
     const texPath = path.join(TIKZ_DIR, `${hash}.tex`)
-    edits.push({ index, parent, texPath, texContent, svgName: `${hash}.svg`, alt: meta.alt || meta.title || 'tikz' })
+
+    // Determine raw character offsets of the code block in the original text
+    const startOffset = (node.position && node.position.start && typeof node.position.start.offset === 'number')
+      ? node.position.start.offset
+      : offsetFromLC(lineOffsets, node.position && node.position.start)
+
+    const endOffset = (node.position && node.position.end && typeof node.position.end.offset === 'number')
+      ? node.position.end.offset
+      : offsetFromLC(lineOffsets, node.position && node.position.end)
+
+    if (typeof startOffset !== 'number' || typeof endOffset !== 'number') return
+
+    edits.push({
+      start: startOffset,
+      end: endOffset,
+      // Build HTML <img> so we can attach a class (Markdown image syntax has no class support)
+      replacement: (() => {
+        const alt = meta.alt || meta.title || 'tikz'
+        const cls = meta.class ? `tikzjax-svg ${meta.class}` : 'tikzjax-svg'
+        return `<svg class="${cls}" src="/static/tikz/${hash}.svg" alt="${alt}"></svg>`
+      })(),
+      texPath,
+      texContent,
+    })
   })
 
   if (edits.length === 0) continue
 
-  // Write .tex files; replace nodes with image links
+  // Write .tex files first
   for (const e of edits) {
     await writeFileIfChanged(e.texPath, e.texContent)
-
-    // Replace code block with Markdown image node
-    e.parent.children[e.index] = {
-      type: 'image',
-      url: `/${path.posix.join('tikz', e.svgName)}`.replace(/\\/g, '/'),
-      title: null,
-      alt: e.alt,
-    }
   }
 
-  const newMd = unified().use(remarkStringify, { fences: true, listItemIndent: 'one' }).stringify(tree)
-  if (newMd !== original) {
-    await fs.writeFile(file, newMd, 'utf8')
+  // Apply text edits in reverse order to avoid shifting offsets
+  const replaced = applyTextEdits(original, edits.map(e => ({ start: e.start, end: e.end, text: e.replacement })))
+
+  if (replaced !== original) {
+    await fs.writeFile(file, replaced, 'utf8')
     changedFiles++
   }
   totalBlocks += edits.length
@@ -87,6 +108,30 @@ console.log(`[tikz-extract] .tex written to: ${path.resolve(TIKZ_DIR)}`)
 console.log(`[tikz-extract] SVGs should be generated into: ${path.resolve(STATIC_TIKZ_DIR)}`)
 
 // ---------------- helpers ---------------- //
+
+function buildLineOffsets(text) {
+  const arr = [0]
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '\n') arr.push(i + 1)
+  }
+  return arr
+}
+
+function offsetFromLC(lineOffsets, pos) {
+  if (!pos || !pos.line || !pos.column) return null
+  const lineIndex = Math.max(0, pos.line - 1)
+  const base = lineOffsets[lineIndex] ?? 0
+  return base + (pos.column - 1)
+}
+
+function applyTextEdits(text, edits) {
+  const sorted = edits.slice().sort((a, b) => b.start - a.start)
+  let out = text
+  for (const e of sorted) {
+    out = out.slice(0, e.start) + e.text + out.slice(e.end)
+  }
+  return out
+}
 
 function parseArgs(args) {
   const out = {}

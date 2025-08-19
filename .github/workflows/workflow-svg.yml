@@ -8,7 +8,7 @@ on:
       - 'tikz/**'
       - 'content/**'
       - '.github/workflows/workflow-svg.yml'
-      - '!static/tikz/**'   # 산출물 자체 변경만으로는 트리거하지 않기
+      - '!quartz/static/tikz/**'   # 산출물 자체 변경만으로는 트리거하지 않기
   workflow_dispatch: {}
 
 permissions:
@@ -62,22 +62,27 @@ jobs:
       #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)
       - name: Build SVGs from tikz
         run: |
-          mkdir -p static/tikz
+          mkdir -p quartz/static/tikz
           node quartz/util/tikz-extract.mjs
           npm run tikz:pdf:tectonic
           npm run tikz:svg
 
       - name: Optimize SVGs (svgo)
-        run: npx svgo -f static/tikz --multipass
+        run: npx svgo -f quartz/static/tikz --multipass
 
       # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
       - name: Commit SVG artifacts
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(svg): update tikz SVGs [skip ci]"
+<<<<<<< HEAD
+          add_options: -f
+=======
+          add_options: -f 
           file_pattern: |
             static/tikz/**/*.svg
             tikz/**/*.pdf
+>>>>>>> parent of 10214407 (Update workflow-svg.yml)
           push_options: --no-verify
 
       # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행

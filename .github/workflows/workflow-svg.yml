@@ -2,7 +2,7 @@ name: tikz-to-svg (prebuild)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ v4 ]
     # 티크스 혹은 문서만 바뀔 때 동작 (원하면 범위를 줄이거나 늘리면 됨)
     paths:
       - 'tikz/**'
@@ -74,6 +74,7 @@ jobs:
       - name: Commit SVG artifacts
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
+          branch: v4
           commit_message: "chore(svg): update tikz SVGs [skip ci]"
           add_options: -f
           push_options: --no-verify

@@ -75,14 +75,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(svg): update tikz SVGs [skip ci]"
-<<<<<<< HEAD
           add_options: -f
-=======
-          add_options: -f 
-          file_pattern: |
-            static/tikz/**/*.svg
-            tikz/**/*.pdf
->>>>>>> parent of 10214407 (Update workflow-svg.yml)
           push_options: --no-verify
 
       # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행

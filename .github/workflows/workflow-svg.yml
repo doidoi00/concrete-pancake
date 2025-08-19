@@ -35,7 +35,7 @@ jobs:
       - name: Ensure npm >= 10.9.2
         run: |
           npm -v
-          npm i -g npm@^10.9.2
+          npm i -g npm@^10.9.2 --no-package-lock
           npm -v
 
       # (선택) 패키지 설치: package.json에 svgo/chokidar-cli가 있다면
@@ -70,6 +70,17 @@ jobs:
       - name: Optimize SVGs (svgo)
         run: npx svgo -f quartz/static/tikz --multipass
 
+      - name: Stash working tree (incl. untracked)
+        run: git stash push -u -m "prebuild-stash"
+
+      - name: Checkout publish
+        run:
+          git fetch origin
+          git checkout -B publish origin/publish || git checkout -b publish
+
+      - name: Restore changes
+        run: git stash pop || true
+
       # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
       - name: Commit SVG artifacts
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -77,6 +88,6 @@ jobs:
           branch: publish
           commit_message: "chore(svg): update tikz SVGs"
           add_options: -f
-          push_options: --no-verify -f
+          push_options: --no-verify
 
       # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행

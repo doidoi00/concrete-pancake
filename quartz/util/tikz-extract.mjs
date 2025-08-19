@@ -12,6 +12,7 @@
  */
 
 import fs from 'fs/promises'
+import fsSync from 'fs'
 import path from 'path'
 import crypto from 'crypto'
 import process from 'process'
@@ -78,7 +79,7 @@ for (const file of mdFiles) {
       // Build HTML <img> so we can attach a class (Markdown image syntax has no class support)
       replacement: (() => {
         const svgPath = path.join(STATIC_TIKZ_DIR, `${hash}.svg`)
-        const svg = fs.readFile(svgPath, 'utf8')
+        const svg = fsSync.readFileSync(svgPath, 'utf8')
         const svgWithClass = svg.replace(/<svg /, '<svg class="tikzjax-svg" ')
         return svgWithClass
       })(),

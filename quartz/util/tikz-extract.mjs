@@ -23,7 +23,7 @@ import { visit } from 'unist-util-visit'
 const argv = new Map(Object.entries(parseArgs(process.argv.slice(2))))
 const CONTENT_DIR = argv.get('content') || 'content'
 const TIKZ_DIR = argv.get('tikz') || 'tikz'
-const STATIC_TIKZ_DIR = argv.get('quartz') || path.join('quartz', 'static', 'tikz')
+const STATIC_TIKZ_DIR = argv.get('static') || path.join('quartz', 'static', 'tikz')
 const HREF_BASE = argv.get('href') || '/static/tikz'
 
 await fs.mkdir(TIKZ_DIR, { recursive: true })

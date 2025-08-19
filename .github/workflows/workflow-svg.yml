@@ -67,6 +67,11 @@ jobs:
           npm run tikz:pdf:tectonic
           npm run tikz:svg
 
+      - name: Build dark SVG variants (-dark)
+        run: |
+          # Generate -dark.svg copies by flipping black text/strokes to white
+          node quartz/util/tikz-extract.mjs --static quartz/static/tikz --post-dark
+
       - name: Optimize SVGs (svgo)
         run: npx svgo -f quartz/static/tikz --multipass
 

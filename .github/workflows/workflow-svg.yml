@@ -74,7 +74,7 @@ jobs:
       - name: Commit SVG artifacts
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          branch: v4
+          branch: publish
           commit_message: "chore(svg): update tikz SVGs [skip ci]"
           add_options: -f
           push_options: --no-verify

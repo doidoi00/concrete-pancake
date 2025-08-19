@@ -3,7 +3,7 @@
  * tikz-extract: Scan Markdown, extract ```tikz code blocks → .tex (standalone),
  * replace blocks with image links to /tikz/<hash>.svg.
  *
- * Usage:  node quartz/util/tikz-extract.mjs [--content content] [--tikz tikz] [--static quartz/static/tikz] [--href /static/tikz] [--post-dark]
+ * Usage:  node quartz/util/tikz-extract.mjs [--content content] [--tikz tikz] [--static /quartz/static/tikz] [--href /static/tikz] [--post-dark]
  *
  * Notes:
  * - Hash = sha1(preamble + tikzCode + engine + compat + border).

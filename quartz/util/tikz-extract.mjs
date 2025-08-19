@@ -78,7 +78,7 @@ for (const file of mdFiles) {
       // Build HTML <img> so we can attach a class (Markdown image syntax has no class support)
       replacement: (() => {
         const svgPath = path.join(STATIC_TIKZ_DIR, `${hash}.svg`)
-        const svg = await fs.readFile(svgPath, 'utf8')
+        const svg = fs.readFile(svgPath, 'utf8')
         const svgWithClass = svg.replace(/<svg /, '<svg class="tikzjax-svg" ')
         return svgWithClass
       })(),

@@ -3,7 +3,7 @@
  * tikz-extract: Scan Markdown, extract ```tikz code blocks → .tex (standalone),
  * replace blocks with image links to /tikz/<hash>.svg.
  *
- * Usage:  node tools/tikz-extract.mjs [--content content] [--tikz tikz] [--static quartz/static/tikz]
+ * Usage:  node quartz/util/tikz-extract.mjs [--content content] [--tikz tikz] [--static quartz/static/tikz] [--href /static/tikz] [--post-dark]
  *
  * Notes:
  * - Hash = sha1(preamble + tikzCode + engine + compat + border).
@@ -23,10 +23,18 @@ import { visit } from 'unist-util-visit'
 const argv = new Map(Object.entries(parseArgs(process.argv.slice(2))))
 const CONTENT_DIR = argv.get('content') || 'content'
 const TIKZ_DIR = argv.get('tikz') || 'tikz'
-const STATIC_TIKZ_DIR = argv.get('quartz') || path.join('quartz', 'static', 'tikz')
+const STATIC_TIKZ_DIR = argv.get('static') || path.join('quartz', 'static', 'tikz')
+const HREF_BASE = argv.get('href') || '/static/tikz'
 
 await fs.mkdir(TIKZ_DIR, { recursive: true })
 await fs.mkdir(STATIC_TIKZ_DIR, { recursive: true })
+
+// Optional post-processing mode: generate -dark.svg copies from existing SVGs
+if (argv.get('post-dark')) {
+  const made = await buildDarkVariants(STATIC_TIKZ_DIR)
+  console.log(`[tikz-extract] dark variants generated: ${made}`)
+  process.exit(0)
+}
 
 const mdFiles = await listMdFiles(CONTENT_DIR)
 let totalBlocks = 0
@@ -47,14 +55,17 @@ for (const file of mdFiles) {
 
   visit(tree, 'code', (node, index, parent) => {
     if (!parent || typeof index !== 'number') return
-    if (!node.lang) return
 
-    const info = String(node.lang).trim()
-    const isTikz = info === 'tikz' || info.startsWith('tikz')
-    if (!isTikz) return
+    const infoRaw = String(node.lang || '').trim()
+    const info = infoRaw.toLowerCase()
 
-    const meta = parseMeta(info, node.meta || '')
+    // Accept tikz / tikz:* / tikzjax labels; also allow latex/tex if content looks like tikz
     const tikzCode = node.value || ''
+    const isTikzFence = info.startsWith('tikz') || info === 'tikzjax' || info === 'latex' || info === 'tex'
+    const looksLikeTikz = /\\begin{tikzpicture}|\\usetikzlibrary|\\pgfplotsset/.test(tikzCode)
+    if (!(isTikzFence || looksLikeTikz)) return
+
+    const meta = parseMeta(infoRaw, node.meta || '')
     if (!tikzCode.trim()) return
 
     const { texContent, engine } = buildTex(tikzCode, meta)
@@ -75,11 +86,18 @@ for (const file of mdFiles) {
     edits.push({
       start: startOffset,
       end: endOffset,
-      // Build HTML <img> so we can attach a class (Markdown image syntax has no class support)
+      // Build HTML <picture> to swap normal/dark SVG using prefers-color-scheme
       replacement: (() => {
         const alt = meta.alt || meta.title || 'tikz'
         const cls = meta.class ? `tikzjax-svg ${meta.class}` : 'tikzjax-svg'
-        return `<img class="${cls}" src="/static/tikz/${hash}.svg" align='center' width="75%" alt="${alt}">`
+        const normal = `${HREF_BASE}/${hash}.svg`
+        const dark = `${HREF_BASE}/${hash}-dark.svg`
+        return [
+          '<picture class="tikzjax-picture">',
+          `  <source srcset="${dark}" media="(prefers-color-scheme: dark)">`,
+          `  <img class="${cls}" src="${normal}" alt="${alt}">`,
+          '</picture>'
+        ].join('\n')
       })(),
       texPath,
       texContent,
@@ -130,6 +148,66 @@ function applyTextEdits(text, edits) {
   for (const e of sorted) {
     out = out.slice(0, e.start) + e.text + out.slice(e.end)
   }
+  return out
+}
+
+async function buildDarkVariants(rootDir) {
+  let made = 0
+  // Walk directory for .svg files
+  async function *walk(dir){
+    let entries
+    try { entries = await fs.readdir(dir, { withFileTypes: true }) } catch { return }
+    for (const ent of entries){
+      const p = path.join(dir, ent.name)
+      if (ent.isDirectory()) yield *walk(p)
+      else if (ent.isFile() && p.endsWith('.svg')) yield p
+    }
+  }
+
+  for await (const svgPath of walk(rootDir)) {
+    if (svgPath.endsWith('-dark.svg')) continue
+    const darkPath = svgPath.replace(/\.svg$/, '-dark.svg')
+
+    // If dark exists and is newer than source, skip
+    try {
+      const [srcStat, dstStat] = await Promise.all([fs.stat(svgPath), fs.stat(darkPath)])
+      if (dstStat.mtimeMs >= srcStat.mtimeMs) continue
+    } catch {}
+
+    const src = await fs.readFile(svgPath, 'utf8')
+    const out = makeDarkVariant(src)
+    if (out && out !== src) {
+      await fs.writeFile(darkPath, out, 'utf8')
+      made++
+    } else if (!out) {
+      // If transform failed, still write a copy to ensure file exists
+      await fs.writeFile(darkPath, src, 'utf8')
+      made++
+    }
+  }
+  return made
+}
+
+function makeDarkVariant(svg) {
+  let out = String(svg)
+
+  // Ensure we only flip pure black to white
+  const blackHex = /#000000\b|#000\b|black\b/gi
+
+  // 1) Text/tspan: force fill to white if currently black (attribute or inline style)
+  out = out.replace(/(<(?:text|tspan)\b[^>]*\bfill=")(#000000|#000|black)("[^>]*>)/gi, '$1#fff$3')
+  out = out.replace(/(<(?:text|tspan)\b[^>]*\bstyle="[^"]*?fill:\s*)(#000000|#000|black)(;?)/gi, '$1#fff$3')
+
+  // 2) Any element with black stroke → white stroke
+  out = out.replace(/(\bstroke=")(#000000|#000|black)(")/gi, '$1#fff$3')
+  out = out.replace(/(style="[^"]*?stroke:\s*)(#000000|#000|black)(;?)/gi, '$1#fff$3')
+
+  // 3) Some generators use rgb(0,0,0)
+  out = out.replace(/(\bstroke=")rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(")/gi, '$1#fff$2')
+  out = out.replace(/(style="[^"]*?stroke:\s*)rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(;?)/gi, '$1#fff$2')
+  out = out.replace(/(<(?:text|tspan)\b[^>]*\bfill=")rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)("[^>]*>)/gi, '$1#fff$2')
+  out = out.replace(/(<(?:text|tspan)\b[^>]*\bstyle="[^"]*?fill:\s*)rgb\(\s*0\s*,\s*0\s*,\s*0\s*\)(;?)/gi, '$1#fff$2')
+
   return out
 }
 

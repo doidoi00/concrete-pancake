@@ -127,8 +127,8 @@ function importantifyInlineTextFonts(svg) {
 function changequotes(svg) {
   // Normalize any of: format("woff2"), format('woff2'), format(“woff2”), format(’woff2’), or format(woff2)
   // to the canonical: format('woff2')
-  const re = /format\(\s*(["'\u2018\u2019\u201C\u201D])?\s*woff2\s*(["'\u2018\u2019\u201C\u201D])?\s*\)/gi
-  return svg.replace(re, "format('woff2')")
+  const re = /format\(\s*(["])?\s*woff2\s*(["])?\s*\)/gi
+  return svg.replace(re, `format('woff2')`)
 }
 
 function replaceImportant(svg) {

@@ -74,6 +74,9 @@ async function inlineOneImg(imgHtml, file) {
 
   // 기존 <style> 블록 내의 font-family/font 선언에만 !important 부여 (외부 전역 CSS 무력화)
   svg = importantifyInlineTextFonts(svg)
+  // normalize @font-face format quotes → format('woff2')
+  svg = changequotes(svg)
+  svg = replaceImportant(svg)
 
 
   // 클래스/aria 병합
@@ -118,6 +121,20 @@ function importantifyInlineTextFonts(svg) {
         /!important/i.test(decl) ? m : `${decl} !important${semi || ''}`
       )
     return `${pre}${q}${patched}${q}`
+  })
+}
+
+function changequotes(svg) {
+  // Match format("woff2"), format('woff2'), and smart quotes, then normalize to single quotes
+  const re = /format\(\s*(['"\u201C\u201D])\s*woff2\s*\1\s*\)/gi
+  return svg.replace(re, "format('woff2')")
+}
+
+function replaceImportant(svg) {
+  const re = /text\.(\S){([^}]*)}/gi
+  return svg.replace(re, (match, g1, g2) => {
+    const replace = g2.replace(/;/g, '!important;')
+    return `text.${g1}{${replace}}`
   })
 }
 

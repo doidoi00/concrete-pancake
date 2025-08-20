@@ -11,6 +11,7 @@
  * Notes:
  * - Works whether the image stands alone or is wrapped in <picture>.
  * - If --prefix-ids is true (default), prefixes all SVG ids and url(#id) references with a file-hash prefix to avoid DOM collisions.
+ * - Locks the embedded font-family (from @font-face) so page-wide CSS cannot override SVG text (no dark-mode injection).
  */
 
 import fs from 'fs/promises'
@@ -71,6 +72,9 @@ async function inlineOneImg(imgHtml, file) {
   const hash = (base.match(/^([a-f0-9]+)/i) || [,'h'])[1]
   if (PREFIX_IDS) svg = prefixIds(svg, `h_${hash}__`)
 
+  // 기존 <style> 블록 내의 font-family/font 선언에만 !important 부여 (외부 전역 CSS 무력화)
+  svg = importantifySvgStyleFonts(svg)
+
 
   // 클래스/aria 병합
   svg = svg.replace(/<svg\b([^>]*)>/i, (m, attrs) => {
@@ -98,6 +102,22 @@ function prefixIds(svg, prefix) {
     return `aria-${kind}=${q}${mapped}${q}`
   })
   return out
+}
+
+function importantifySvgStyleFonts(svg) {
+  // 각 <style>...</style> 블록 내부에서 font-family / font 선언에만 !important를 덧붙인다
+  return svg.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (full, css) => {
+    let patched = css
+      // font-family: ... → font-family: ... !important
+      .replace(/(font-family\s*:\s*[^;}{]+)(;?)/gi, (m, decl, semi) => {
+        return /!important/i.test(decl) ? m : `${decl} !important${semi || ''}`
+      })
+      // font: ... (축약형) → font: ... !important
+      .replace(/(font\s*:\s*[^;}{]+)(;?)/gi, (m, decl, semi) => {
+        return /!important/i.test(decl) ? m : `${decl} !important${semi || ''}`
+      })
+    return full.replace(css, patched)
+  })
 }
 
 // ------------- utils -------------

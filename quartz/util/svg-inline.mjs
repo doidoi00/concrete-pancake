@@ -73,7 +73,7 @@ async function inlineOneImg(imgHtml, file) {
   if (PREFIX_IDS) svg = prefixIds(svg, `h_${hash}__`)
 
   // 기존 <style> 블록 내의 font-family/font 선언에만 !important 부여 (외부 전역 CSS 무력화)
-  svg = importantifySvgStyleFonts(svg)
+  svg = importantifyInlineTextFonts(svg)
 
 
   // 클래스/aria 병합
@@ -104,19 +104,20 @@ function prefixIds(svg, prefix) {
   return out
 }
 
-function importantifySvgStyleFonts(svg) {
-  // 각 <style>...</style> 블록 내부에서 font-family / font 선언에만 !important를 덧붙인다
-  return svg.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, (full, css) => {
-    let patched = css
+function importantifyInlineTextFonts(svg) {
+  // <text|tspan|foreignObject>의 inline style 속 font-family/font 선언에만 !important 추가
+  const tagRe = /(<(?:text|tspan|foreignObject)\b[^>]*\bstyle=)(["'])([^"']*)(\2)/gi
+  return svg.replace(tagRe, (_m, pre, q, style, postq) => {
+    const patched = String(style)
       // font-family: ... → font-family: ... !important
-      .replace(/(font-family\s*:\s*[^;}{]+)(;?)/gi, (m, decl, semi) => {
-        return /!important/i.test(decl) ? m : `${decl} !important${semi || ''}`
-      })
+      .replace(/(font-family\s*:\s*[^;}{]+)(;?)/gi, (m, decl, semi) =>
+        /!important/i.test(decl) ? m : `${decl} !important${semi || ''}`
+      )
       // font: ... (축약형) → font: ... !important
-      .replace(/(font\s*:\s*[^;}{]+)(;?)/gi, (m, decl, semi) => {
-        return /!important/i.test(decl) ? m : `${decl} !important${semi || ''}`
-      })
-    return full.replace(css, patched)
+      .replace(/(font\s*:\s*[^;}{]+)(;?)/gi, (m, decl, semi) =>
+        /!important/i.test(decl) ? m : `${decl} !important${semi || ''}`
+      )
+    return `${pre}${q}${patched}${q}`
   })
 }
 

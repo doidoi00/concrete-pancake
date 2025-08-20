@@ -125,8 +125,9 @@ function importantifyInlineTextFonts(svg) {
 }
 
 function changequotes(svg) {
-  // Match format("woff2"), format('woff2'), and smart quotes, then normalize to single quotes
-  const re = /format\(\s*(['"\u201C\u201D])\s*woff2\s*\1\s*\)/gi
+  // Normalize any of: format("woff2"), format('woff2'), format(“woff2”), format(’woff2’), or format(woff2)
+  // to the canonical: format('woff2')
+  const re = /format\(\s*(["'\u2018\u2019\u201C\u201D])?\s*woff2\s*(["'\u2018\u2019\u201C\u201D])?\s*\)/gi
   return svg.replace(re, "format('woff2')")
 }
 

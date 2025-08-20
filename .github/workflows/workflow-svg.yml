@@ -70,6 +70,9 @@ jobs:
       - name: Optimize SVGs (svgo)
         run: npx svgo -f quartz/static/tikz --multipass
 
+      - name: Inline SVGs
+        run: node quartz/util/svg-inline.mjs
+
       - name: Stash working tree (incl. untracked)
         run: git stash push -u -m "prebuild-stash"
 

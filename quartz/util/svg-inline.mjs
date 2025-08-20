@@ -109,7 +109,7 @@ function prefixIds(svg, prefix) {
 
 function importantifyInlineTextFonts(svg) {
   // <text|tspan|foreignObject>의 inline style 속 font-family/font 선언에만 !important 추가
-  const tagRe = /(<(?:text|tspan|foreignObject)\b[^>]*\bstyle=)(["'])([^"']*)(\2)/gi
+  const tagRe = /(<(?:text|tspan|foreignObject)\b[^>]*\bstyle\s*=\s*)(["'])([\s\S]*?)\2/gi
   return svg.replace(tagRe, (_m, pre, q, style, postq) => {
     const patched = String(style)
       // font-family: ... → font-family: ... !important
@@ -131,10 +131,15 @@ function changequotes(svg) {
 }
 
 function replaceImportant(svg) {
-  const re = /text\.(\S){([^}]*)}/gi
-  return svg.replace(re, (match, g1, g2) => {
-    const replace = g2.replace(/;/g, '!important;')
-    return `text.${g1}{${replace}}`
+  // text.f1{...} 패턴만 대상으로, 각 선언에 !important를 붙임(이미 있으면 유지)
+  const re = /text\.([A-Za-z0-9_-]+)\s*\{([^}]*)\}/gi
+  return svg.replace(re, (_m, cls, body) => {
+    const patched = body.replace(
+      /([^:{};]+:\s*[^;{}]+)(;?)/g,                             // 선언 한 줄
+      (m, decl, semi) => /\!important\b/i.test(decl) ? m        // 이미 있으면 그대로
+                         : `${decl} !important${semi || ';'}`   // 없으면 추가(+세미콜론 보정)
+    )
+    return `text.${cls}{${patched}}`
   })
 }
 

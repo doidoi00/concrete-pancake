@@ -4,13 +4,30 @@ FROM node:22-bookworm-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 시스템 의존성 설치
-# - tectonic: LaTeX 엔진
 # - dvisvgm, ghostscript: PDF→SVG
 # - Noto CJK: 한글 포함 폰트
+# (tectonic은 아래 GitHub 릴리스에서 설치)
 RUN apt-get update && apt-get install -y \
-    tectonic dvisvgm ghostscript \
+    ca-certificates curl tar \
+    dvisvgm ghostscript \
     fonts-noto-cjk fonts-noto-core \
  && rm -rf /var/lib/apt/lists/*
+
+# --- Tectonic: GitHub 릴리스 바이너리 설치 (Debian bookworm에는 APT 패키지 없음) ---
+ARG TECTONIC_VERSION=0.15.0
+RUN set -eux; \
+  arch="$(dpkg --print-architecture)"; \
+  case "$arch" in \
+    amd64)  tgt="x86_64-unknown-linux-gnu" ;; \
+    arm64)  tgt="aarch64-unknown-linux-gnu" ;; \
+    *) echo "Unsupported arch: $arch" && exit 1 ;; \
+  esac; \
+  curl -L -o /tmp/tectonic.tar.gz \
+    "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40v${TECTONIC_VERSION}/tectonic-${TECTONIC_VERSION}-${tgt}.tar.gz"; \
+  mkdir -p /opt/tectonic && tar -xzf /tmp/tectonic.tar.gz -C /opt/tectonic --strip-components=1; \
+  ln -s /opt/tectonic/tectonic /usr/local/bin/tectonic; \
+  rm -f /tmp/tectonic.tar.gz; \
+  tectonic --version
 
 # svgo 전역 설치(매번 npx로 받지 않도록)
 RUN npm i -g svgo@^3

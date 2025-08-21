@@ -7205,6 +7205,9 @@ body {
   svg.tikzjax-svg path[stroke="#fff"]{
     stroke: #000 !important;
   }
+  svg.tikzjax-svg path[fill="fff"]{
+    opacity: 0 !important;
+  }
 }
 :root:root:root {
   font-family: var(--font-default) !important;

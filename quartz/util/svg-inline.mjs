@@ -137,7 +137,7 @@ function changequotes(svg) {
 
 function replaceImportant(svg) {
   // text.f1{...} 패턴만 대상으로, 각 선언에 !important를 붙임(이미 있으면 유지)
-  const hash = (svg.match(/<svg[^>]+id=["']svg-([a-z0-9_]+)["']/i) || [,'h'])[1]
+  const hash = path.basename(svg, '.svg')
   if (!hash) return svg // no id found, nothing to do
   const re = /text\.([A-Za-z0-9_-]+)\s*\{([^}]*)\}/gi
   return svg.replace(re, (_m, cls, body) => {

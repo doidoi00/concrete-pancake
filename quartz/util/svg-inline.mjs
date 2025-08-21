@@ -137,14 +137,16 @@ function changequotes(svg) {
 
 function replaceImportant(svg) {
   // text.f1{...} 패턴만 대상으로, 각 선언에 !important를 붙임(이미 있으면 유지)
+  const hash = (svg.match(/<svg[^>]+id=["']svg-([a-z0-9_]+)["']/i) || [,'h'])[1]
+  if (!hash) return svg // no id found, nothing to do
   const re = /text\.([A-Za-z0-9_-]+)\s*\{([^}]*)\}/gi
-  return svg.replace(re, (_m, cls, body, id) => {
+  return svg.replace(re, (_m, cls, body) => {
     const patched = body.replace(
       /([^:{};]+:\s*[^;{}]+)(;?)/g,                             // 선언 한 줄
       (m, decl, semi) => /\!important\b/i.test(decl) ? m        // 이미 있으면 그대로
                          : `${decl} !important${semi || ';'}`   // 없으면 추가(+세미콜론 보정)
     )
-    return `${id}.text.${cls}{${patched}}`
+    return `svg-${hash}.text.${cls}{${patched}}`
   })
 }
 

@@ -146,7 +146,7 @@ function replaceImportant(svg, file) {
       (m, decl, semi) => /\!important\b/i.test(decl) ? m        // 이미 있으면 그대로
                          : `${decl} !important${semi || ';'}`   // 없으면 추가(+세미콜론 보정)
     )
-    return `#svg-${hash}.text.${cls}{${patched}}`
+    return `#svg-${hash} text.${cls}{${patched}}`
   })
 }
 

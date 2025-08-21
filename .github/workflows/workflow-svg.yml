@@ -23,9 +23,9 @@ jobs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     # 🔽 모든 스텝을 미리 빌드해둔 컨테이너에서 실행
-    # 사전에 ghcr.io/<OWNER>/texlive-svg:latest 이미지를 올려두었음을 가정
+    # 사전에 ghcr.io/<OWNER>/<REPO>/texlive-svg:latest 이미지를 올려두었음을 가정
     container:
-      image: ghcr.io/${{ github.repository_owner }}/texlive-svg:latest
+      image: ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:latest
       # (선택) 루트가 아닌 유저로 실행하고 싶다면 UID:GID 지정
       options: --user 1001:1001
     concurrency:

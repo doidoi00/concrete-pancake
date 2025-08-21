@@ -16,15 +16,33 @@ RUN apt-get update && apt-get install -y \
 # --- Tectonic: GitHub 릴리스 바이너리 설치 (Debian bookworm에는 APT 패키지 없음) ---
 ARG TECTONIC_VERSION=0.15.0
 RUN set -eux; \
-  arch="$(dpkg --print-architecture)"; \
+  arch="$(dpkg --print-architecture || true)"; \
+  [ -n "$arch" ] || arch="$(uname -m)"; \
   case "$arch" in \
-    amd64)  tgt="x86_64-unknown-linux-gnu" ;; \
-    arm64)  tgt="aarch64-unknown-linux-gnu" ;; \
-    *) echo "Unsupported arch: $arch" && exit 1 ;; \
+    amd64|x86_64)  cpu="x86_64" ;; \
+    arm64|aarch64) cpu="aarch64" ;; \
+    *) echo "Unsupported arch: $arch" >&2; exit 1 ;; \
   esac; \
-  curl -L -o /tmp/tectonic.tar.gz \
-    "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40v${TECTONIC_VERSION}/tectonic-${TECTONIC_VERSION}-${tgt}.tar.gz"; \
-  mkdir -p /opt/tectonic && tar -xzf /tmp/tectonic.tar.gz -C /opt/tectonic --strip-components=1; \
+  base1="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40v${TECTONIC_VERSION}"; \
+  base2="https://github.com/tectonic-typesetting/tectonic/releases/download/v${TECTONIC_VERSION}"; \
+  set +e; \
+  for base in "$base1" "$base2"; do \
+    for libc in gnu musl; do \
+      url="$base/tectonic-${TECTONIC_VERSION}-${cpu}-unknown-linux-${libc}.tar.gz"; \
+      echo "Attempt: $url"; \
+      if curl -fsSL --retry 3 -o /tmp/tectonic.tar.gz "$url"; then \
+        if tar -tzf /tmp/tectonic.tar.gz >/dev/null 2>&1; then \
+          echo "OK: downloaded $url"; \
+          ok=1; break; \
+        fi; \
+      fi; \
+    done; \
+    [ -n "$ok" ] && break; \
+  done; \
+  set -e; \
+  [ -n "$ok" ] || { echo "Failed to download a valid Tectonic tarball for ${cpu} (tried GNU/MUSL and two tag patterns)" >&2; exit 1; }; \
+  mkdir -p /opt/tectonic; \
+  tar -xzf /tmp/tectonic.tar.gz -C /opt/tectonic --strip-components=1; \
   ln -s /opt/tectonic/tectonic /usr/local/bin/tectonic; \
   rm -f /tmp/tectonic.tar.gz; \
   tectonic --version

@@ -18,11 +18,11 @@
     "format": "npx prettier . --write",
     "test": "tsx --test",
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
-    "tikz:pdf:lualatex": "find tikz -name '*.tex' -print0 | xargs -0 -n1 -I{} sh -c 'dir=\"$(dirname \"{}\")\"; base=\"$(basename \"{}\")\"; (cd \"$dir\" && latexmk -lualatex -interaction=nonstopmode -halt-on-error -pdf \"$base\")'",
-    "tikz:svg": "mkdir -p quartz/static/tikz && find tikz -name '*.pdf' -print0 | xargs -0 -n1 -I{} sh -c 'base=\"$(basename \"{}\" .pdf)\"; dvisvgm --pdf --font-format=woff2 -a -o \"quartz/static/tikz/${base}.svg\" \"{}\"'",
+    "tikz:pdf:dvilualatex": "find tikz -name '*.tex' -print0 | xargs -0 -n1 -I{} sh -c 'dir=\"$(dirname \"{}\")\"; base=\"$(basename \"{}\")\"; (cd \"$dir\" && dvilualatex -interaction=batchmode -halt-on-error \"$base\" && dvilualatex -interaction=batchmode -halt-on-error \"$base\")'",
+    "tikz:svg:text": "find tikz -name '*.dvi' -print0 | xargs -0 -n1 -I{} sh -c 'name=\"$(basename \"{}\" .dvi)\"; out=\"quartz/static/tikz/${name}.svg\"; dvisvgm --font-format=woff2 --exact-bbox -o \"$out\" \"{}\"'",
+    "tikz:text": "npm run tikz:pdf:dvilualatex && npm run tikz:svg:text && npm run tikz:opt",
     "tikz:opt": "svgo -f quartz/static/tikz",
-    "tikz:extract": "node tools/tikz-extract.mjs",
-    "tikz": "npm run tikz:pdf:lualatex && npm run tikz:svg && npm run tikz:opt"
+    "tikz:extract": "node tools/tikz-extract.mjs"
   },
   "engines": {
     "npm": ">=10.9.2",

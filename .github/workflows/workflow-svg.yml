@@ -109,7 +109,7 @@ jobs:
         run: |
           mkdir -p quartz/static/tikz
           node quartz/util/tikz-extract.mjs
-          npm run tikz:pdf:lualatex
+          npm run tikz:pdf:dvilualatex
           npm run tikz:svg
 
       - name: format() after dvisvgm

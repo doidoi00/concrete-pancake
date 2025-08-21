@@ -135,9 +135,9 @@ function changequotes(svg) {
   return svg.replace(re, `format('woff2')`)
 }
 
-function replaceImportant(svg) {
+function replaceImportant(svg, file) {
   // text.f1{...} 패턴만 대상으로, 각 선언에 !important를 붙임(이미 있으면 유지)
-  const hash = path.basename(before, '.svg')
+  const hash = path.basename(file, '.svg')
   if (!hash) return svg // no id found, nothing to do
   const re = /text\.([A-Za-z0-9_-]+)\s*\{([^}]*)\}/gi
   return svg.replace(re, (_m, cls, body) => {

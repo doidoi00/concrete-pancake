@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     dvisvgm ghostscript \
     # CJK fonts
     fonts-noto-cjk fonts-noto-core \
+    git \
  && rm -rf /var/lib/apt/lists/*
 
 # svgo 전역 설치(매번 npx로 받지 않도록)

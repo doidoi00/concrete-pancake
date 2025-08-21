@@ -18,11 +18,11 @@
     "format": "npx prettier . --write",
     "test": "tsx --test",
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
-    "tikz:pdf:dvilualatex": "find tikz -name '*.tex' -print0 | xargs -0 -n1 -I{} sh -c 'dir=\"$(dirname \"{}\")\"; base=\"$(basename \"{}\")\"; (cd \"$dir\" && dvilualatex -interaction=batchmode -halt-on-error \"$base\" && dvilualatex -interaction=batchmode -halt-on-error \"$base\")'",
-    "tikz:svg:text": "find tikz -name '*.dvi' -print0 | xargs -0 -n1 -I{} sh -c 'name=\"$(basename \"{}\" .dvi)\"; out=\"quartz/static/tikz/${name}.svg\"; dvisvgm --font-format=woff2 --exact-bbox -o \"$out\" \"{}\"'",
-    "tikz:text": "npm run tikz:pdf:dvilualatex && npm run tikz:svg:text && npm run tikz:opt",
+    "tikz:pdf:tectonic": "find tikz -name '*.tex' -print0 | xargs -0 -n1 -I{} sh -c 'dir=\"$(dirname \"{}\")\"; tectonic -X compile --keep-intermediates --outdir \"$dir\" \"{}\"'",
+    "tikz:svg": "mkdir -p quartz/static/tikz && find tikz -name '*.pdf' -print0 | xargs -0 -n1 -I{} sh -c 'base=\"$(basename \"{}\" .pdf)\"; dvisvgm --pdf --font-format=woff2 -a -o \"quartz/static/tikz/${base}.svg\" \"{}\"'",
     "tikz:opt": "svgo -f quartz/static/tikz",
-    "tikz:extract": "node tools/tikz-extract.mjs"
+    "tikz:extract": "node tools/tikz-extract.mjs",
+    "tikz": "npm run tikz:pdf:tectonic && npm run tikz:svg && npm run tikz:opt"
   },
   "engines": {
     "npm": ">=10.9.2",

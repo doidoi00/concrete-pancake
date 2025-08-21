@@ -9,71 +9,17 @@ on:
       - 'content/**'
       - '.github/workflows/workflow-svg.yml'
       - 'quartz/util/tikz-extract.mjs'
-      - 'quartz/util/svg-inline.mjs'
       - '!quartz/static/tikz/**'   # 산출물 자체 변경만으로는 트리거하지 않기
-      - 'docker/**'
   workflow_dispatch: {}
 
 permissions:
   contents: write
-  packages: read
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      docker: ${{ steps.filter.outputs.docker }}
-    steps:
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            docker:
-              - 'docker/**'
-
-  image:
-    name: Build texlive-svg image
-    needs: changes
-    if: github.actor != 'github-actions[bot]' && needs.changes.outputs.docker == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push texlive image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/texlive-svg.Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:latest
-            ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:sha-${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:buildcache
-          cache-to: type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:buildcache
-
   svg:
     # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    # 🔽 모든 스텝을 미리 빌드해둔 컨테이너에서 실행
-    # docker/** 변경 시에만 image 잡이 최신 이미지를 갱신하고, 그 외엔 :latest를 재사용
-    container:
-      image: ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:latest
-      # (선택) 루트가 아닌 유저로 실행하고 싶다면 UID:GID 지정
-      options: --user 1001:1001
     concurrency:
       group: tikz-svg-${{ github.ref }}
       cancel-in-progress: false
@@ -81,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Node는 컨테이너에 포함해뒀다면 생략 가능. 포함되지 않았다면 이 스텝이 컨테이너 내부에 설치함
+      # Node가 꼭 필요하진 않지만, svgo나 스크립트를 쓸 수 있게 세팅
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -93,6 +39,7 @@ jobs:
           npm i -g npm@^10.9.2 --no-package-lock
           npm -v
 
+      # (선택) 패키지 설치: package.json에 svgo/chokidar-cli가 있다면
       - name: Install deps (optional)
         run: |
           if [ -f package.json ]; then
@@ -103,13 +50,22 @@ jobs:
             fi
           fi
 
-      # ✅ 컨테이너 이미지에 이미 TeX Live/dvisvgm/gs/fonts가 들어 있으므로 설치 스텝 제거
+      # Tectonic(LaTeX 엔진) 설치
+      - uses: wtfjoke/setup-tectonic@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # PDF→SVG 변환기 + CJK 폰트
+      - name: Install dvisvgm & gs & fonts
+        run: sudo apt-get update && sudo apt-get install -y dvisvgm ghostscript fonts-noto-cjk
+
+      # Generate SVG .tex → .pdf → .svg → svgo
+      #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)
       - name: Build SVGs from tikz
         run: |
           mkdir -p quartz/static/tikz
           node quartz/util/tikz-extract.mjs
-          npm run tikz:pdf:dvilualatex
+          npm run tikz:pdf:tectonic
           npm run tikz:svg
 
       - name: format() after dvisvgm
@@ -125,32 +81,23 @@ jobs:
           echo '--- post script 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
-      - name: Mark workspace safe
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Stage artifacts to temp (SVGs only)
-        run: |
-          rm -rf /tmp/artifacts && mkdir -p /tmp/artifacts/quartz/static/tikz
-          # 산출물만 게시: content/** 는 충돌을 피하기 위해 제외
-          if [ -d quartz/static/tikz ]; then
-            cp -a quartz/static/tikz/. /tmp/artifacts/quartz/static/tikz/
-          fi
+      - name: Stash working tree (incl. untracked)
+        run: git stash push -u -m "prebuild-stash"
 
       - name: Checkout publish
-        run: |
+        run:
           git fetch origin
           git checkout -B publish origin/publish || git checkout -b publish
 
-      - name: Sync artifacts into publish (SVGs only)
-        run: |
-          rm -rf quartz/static/tikz
-          mkdir -p quartz/static/tikz
-          cp -a /tmp/artifacts/quartz/static/tikz/. quartz/static/tikz/
-          git add -A
+      - name: Restore changes
+        run: git stash pop || true
 
+      # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
       - name: Commit SVG artifacts
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           branch: publish
           commit_message: "chore(svg): update tikz SVGs"
           push_options: --force-with-lease
+
+      # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행

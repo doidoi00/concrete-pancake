@@ -11,6 +11,7 @@ on:
       - 'quartz/util/tikz-extract.mjs'
       - 'quartz/util/svg-inline.mjs'
       - '!quartz/static/tikz/**'   # 산출물 자체 변경만으로는 트리거하지 않기
+      - 'docker/**'
   workflow_dispatch: {}
 
 permissions:
@@ -18,14 +19,47 @@ permissions:
   packages: read
 
 jobs:
+  image:
+    name: Build texlive-svg image
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push texlive image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/texlive-svg.Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:latest
+            ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:sha-${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:buildcache
+          cache-to: type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:buildcache
+
   svg:
+    needs: image
     # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     # 🔽 모든 스텝을 미리 빌드해둔 컨테이너에서 실행
     # 사전에 ghcr.io/<OWNER>/<REPO>/texlive-svg:latest 이미지를 올려두었음을 가정
     container:
-      image: ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:latest
+      image: ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:sha-${{ github.sha }}
       # (선택) 루트가 아닌 유저로 실행하고 싶다면 UID:GID 지정
       options: --user 1001:1001
     concurrency:

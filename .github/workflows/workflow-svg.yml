@@ -15,12 +15,19 @@ on:
 
 permissions:
   contents: write
+  packages: read
 
 jobs:
   svg:
     # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    # 🔽 모든 스텝을 미리 빌드해둔 컨테이너에서 실행
+    # 사전에 ghcr.io/<OWNER>/tectonic-svg:latest 이미지를 올려두었음을 가정
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/tectonic-svg:latest
+      # (선택) 루트가 아닌 유저로 실행하고 싶다면 UID:GID 지정
+      options: --user 1001:1001
     concurrency:
       group: tikz-svg-${{ github.ref }}
       cancel-in-progress: false
@@ -28,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Node가 꼭 필요하진 않지만, svgo나 스크립트를 쓸 수 있게 세팅
+      # Node는 컨테이너에 포함해뒀다면 생략 가능. 포함되지 않았다면 이 스텝이 컨테이너 내부에 설치함
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -40,7 +47,6 @@ jobs:
           npm i -g npm@^10.9.2 --no-package-lock
           npm -v
 
-      # (선택) 패키지 설치: package.json에 svgo/chokidar-cli가 있다면
       - name: Install deps (optional)
         run: |
           if [ -f package.json ]; then
@@ -51,17 +57,8 @@ jobs:
             fi
           fi
 
-      # Tectonic(LaTeX 엔진) 설치
-      - uses: wtfjoke/setup-tectonic@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      # ✅ 컨테이너 이미지에 이미 tectonic/dvisvgm/gs/fonts가 들어 있으므로 설치 스텝 제거
 
-      # PDF→SVG 변환기 + CJK 폰트
-      - name: Install dvisvgm & gs & fonts
-        run: sudo apt-get update && sudo apt-get install -y dvisvgm ghostscript fonts-noto-cjk
-
-      # Generate SVG .tex → .pdf → .svg → svgo
-      #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)
       - name: Build SVGs from tikz
         run: |
           mkdir -p quartz/static/tikz
@@ -86,19 +83,16 @@ jobs:
         run: git stash push -u -m "prebuild-stash"
 
       - name: Checkout publish
-        run:
+        run: |
           git fetch origin
           git checkout -B publish origin/publish || git checkout -b publish
 
       - name: Restore changes
         run: git stash pop || true
 
-      # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
       - name: Commit SVG artifacts
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           branch: publish
           commit_message: "chore(svg): update tikz SVGs"
           push_options: --force-with-lease
-
-      # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행

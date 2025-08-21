@@ -19,9 +19,22 @@ permissions:
   packages: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docker: ${{ steps.filter.outputs.docker }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docker:
+              - 'docker/**'
+
   image:
     name: Build texlive-svg image
-    if: github.actor != 'github-actions[bot]'
+    needs: changes
+    if: github.actor != 'github-actions[bot]' && needs.changes.outputs.docker == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -52,14 +65,13 @@ jobs:
           cache-to: type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:buildcache
 
   svg:
-    needs: image
     # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     # 🔽 모든 스텝을 미리 빌드해둔 컨테이너에서 실행
-    # 사전에 ghcr.io/<OWNER>/<REPO>/texlive-svg:latest 이미지를 올려두었음을 가정
+    # docker/** 변경 시에만 image 잡이 최신 이미지를 갱신하고, 그 외엔 :latest를 재사용
     container:
-      image: ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:sha-${{ github.sha }}
+      image: ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:latest
       # (선택) 루트가 아닌 유저로 실행하고 싶다면 UID:GID 지정
       options: --user 1001:1001
     concurrency:

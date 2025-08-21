@@ -72,14 +72,6 @@ jobs:
           echo '--- dvisvgm 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
-      - name: Optimize SVGs (svgo)
-        run: npx svgo -f quartz/static/tikz --multipass
-
-      - name: format() after SVGO
-        run: |
-          echo '--- SVGO 직후 ---'
-          grep -n "format(" quartz/static/tikz/*.svg || true
-
       - name: Inline SVGs
         run: node quartz/util/svg-inline.mjs
 

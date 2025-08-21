@@ -20,7 +20,7 @@
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
     "tikz:pdf:tectonic": "find tikz -name '*.tex' -print0 | xargs -0 -n1 -I{} sh -c 'dir=\"$(dirname \"{}\")\"; tectonic -X compile --keep-intermediates --outdir \"$dir\" \"{}\"'",
     "tikz:svg": "mkdir -p quartz/static/tikz && find tikz -name '*.pdf' -print0 | xargs -0 -n1 -I{} sh -c 'base=\"$(basename \"{}\" .pdf)\"; dvisvgm --pdf --font-format=woff2 -a -o \"quartz/static/tikz/${base}.svg\" \"{}\"'",
-    "tikz:opt": "svgo -f quartz/static/tikz --config='{\"multipass\": true}'",
+    "tikz:opt": "svgo -f quartz/static/tikz --config='{\"multipass\": true, \"plugins\": [{\"name\": \"preset-default\", \"params\": {\"overrides\": {\"minifyStyles\": false, \"convertStyleToAttrs\": false, \"inlineStyles\": false}}}]}'",
     "tikz:extract": "node tools/tikz-extract.mjs",
     "tikz": "npm run tikz:pdf:tectonic && npm run tikz:svg && npm run tikz:opt"
   },

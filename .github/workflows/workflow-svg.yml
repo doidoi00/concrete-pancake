@@ -8,6 +8,8 @@ on:
       - 'tikz/**'
       - 'content/**'
       - '.github/workflows/workflow-svg.yml'
+      - 'quartz/util/tikz-extract.mjs'
+      - 'quartz/util/svg-inline.mjs'
       - '!quartz/static/tikz/**'   # 산출물 자체 변경만으로는 트리거하지 않기
   workflow_dispatch: {}
 

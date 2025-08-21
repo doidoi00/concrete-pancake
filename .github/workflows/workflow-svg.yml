@@ -46,10 +46,10 @@ jobs:
           file: docker/texlive-svg.Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:latest
-            ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:sha-${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:buildcache
-          cache-to: type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:buildcache
+            ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:latest
+            ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:sha-${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:buildcache
+          cache-to: type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:buildcache
 
   svg:
     needs: image
@@ -59,7 +59,7 @@ jobs:
     # 🔽 모든 스텝을 미리 빌드해둔 컨테이너에서 실행
     # 사전에 ghcr.io/<OWNER>/<REPO>/texlive-svg:latest 이미지를 올려두었음을 가정
     container:
-      image: ghcr.io/${{ github.repository_owner }}/concrete-pancake/docker/texlive-svg:sha-${{ github.sha }}
+      image: ghcr.io/${{ github.repository_owner }}/concrete-pancake/texlive-svg:sha-${{ github.sha }}
       # (선택) 루트가 아닌 유저로 실행하고 싶다면 UID:GID 지정
       options: --user 1001:1001
     concurrency:
@@ -113,16 +113,28 @@ jobs:
           echo '--- post script 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
-      - name: Stash working tree (incl. untracked)
-        run: git stash push -u -m "prebuild-stash"
+      - name: Mark workspace safe
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Stage artifacts to temp (SVGs only)
+        run: |
+          rm -rf /tmp/artifacts && mkdir -p /tmp/artifacts/quartz/static/tikz
+          # 산출물만 게시: content/** 는 충돌을 피하기 위해 제외
+          if [ -d quartz/static/tikz ]; then
+            cp -a quartz/static/tikz/. /tmp/artifacts/quartz/static/tikz/
+          fi
 
       - name: Checkout publish
         run: |
           git fetch origin
           git checkout -B publish origin/publish || git checkout -b publish
 
-      - name: Restore changes
-        run: git stash pop || true
+      - name: Sync artifacts into publish (SVGs only)
+        run: |
+          rm -rf quartz/static/tikz
+          mkdir -p quartz/static/tikz
+          cp -a /tmp/artifacts/quartz/static/tikz/. quartz/static/tikz/
+          git add -A
 
       - name: Commit SVG artifacts
         uses: stefanzweifel/git-auto-commit-action@v5

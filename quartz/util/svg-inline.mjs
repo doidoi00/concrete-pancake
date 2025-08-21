@@ -78,7 +78,7 @@ async function inlineOneImg(imgHtml, file) {
   svg = importantifyInlineTextFonts(svg)
   // normalize @font-face format quotes → format('woff2')
   svg = changequotes(svg)
-  svg = replaceImportant(svg, file)
+  svg = replaceImportant(svg, src)
 
 
   // 클래스/aria 병합

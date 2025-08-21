@@ -57,6 +57,8 @@ async function inlineOneImg(imgHtml, file) {
   if (!src) return null
   const alt = getAttr('alt') || 'tikz'
   const cls = getAttr('class') || ''
+  const id = getAttr('id') || ''
+
 
   const base = path.basename(src)               // 예: 7ce39899ad9ef596.svg
   const svgPath = path.join(STATIC_DIR, base)   // quartz/static/tikz/<hash>.svg
@@ -85,10 +87,12 @@ async function inlineOneImg(imgHtml, file) {
     const merged = hasClass
       ? attrs.replace(/\bclass=(["'])([^"']*)\1/i, (_m2, q) => `class=${q}${cls}${q}`)
       : `${attrs} class="${cls}"`
+    const hasId = /\bid=/.test(merged)
     const hasRole = /\brole=/.test(merged)
     const hasLabel = /\baria-label=/.test(merged)
+    const withId = hasId ? merged : `${merged} id="svg-${hash}"`
     const withRole = hasRole ? merged : `${merged} role="img"`
-    const withAria = hasLabel ? withRole : `${withRole} aria-label="${escapeHtml(alt)}"`
+    const withAria = hasLabel ? withRole : `${withId} ${withRole} aria-label="${escapeHtml(alt)}"`
     return `<svg${withAria}>`
   })
 

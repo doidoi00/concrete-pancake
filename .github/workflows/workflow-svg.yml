@@ -67,11 +67,26 @@ jobs:
           npm run tikz:pdf:tectonic
           npm run tikz:svg
 
+      - name: format() after dvisvgm
+        run: |
+          echo '--- dvisvgm 직후 ---'
+          grep -n "format(" quartz/static/tikz/*.svg || true
+
       - name: Optimize SVGs (svgo)
         run: npx svgo -f quartz/static/tikz --multipass
 
+      - name: format() after SVGO
+        run: |
+          echo '--- SVGO 직후 ---'
+          grep -n "format(" quartz/static/tikz/*.svg || true
+
       - name: Inline SVGs
         run: node quartz/util/svg-inline.mjs
+
+      - name: format() after post script
+        run: |
+          echo '--- post script 직후 ---'
+          grep -n "format(" quartz/static/tikz/*.svg || true
 
       - name: Stash working tree (incl. untracked)
         run: git stash push -u -m "prebuild-stash"
@@ -90,7 +105,6 @@ jobs:
         with:
           branch: publish
           commit_message: "chore(svg): update tikz SVGs"
-          add_options: -f
           push_options: --force-with-lease
 
       # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행

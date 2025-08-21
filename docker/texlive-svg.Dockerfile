@@ -26,8 +26,8 @@ RUN npm i -g svgo@^3
 COPY docker/warmup.tex /tmp/warmup.tex
 
 # TeX Live warm-up: compile once to pre-generate formats/caches and exercise dvisvgm
-RUN lualatex -interaction=batchmode -halt-on-error /tmp/warmup.tex || true \
- && lualatex -interaction=batchmode -halt-on-error /tmp/warmup.tex || true \
+RUN lualatex -interaction=batchmode -halt-on-error /docker/warmup.tex || true \
+ && lualatex -interaction=batchmode -halt-on-error /docker/warmup.tex || true \
  && dvisvgm --pdf /tmp/warmup.pdf -o /tmp/warmup.svg || true
 
 # 유저/작업 디렉토리 정리

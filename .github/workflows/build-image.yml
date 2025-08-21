@@ -1,4 +1,4 @@
-name: build-tectonic-svg-image
+name: build-texlive-svg-image
 on:
   push:
     branches: [ v4 ]
@@ -28,7 +28,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/tectonic-svg
+          images: ghcr.io/${{ github.repository }}/texlive-svg
           tags: |
             type=raw,value=latest
             type=sha,prefix=sha-,format=short
@@ -37,7 +37,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: docker/tectonic-svg.Dockerfile
+          file: docker/texlive-svg.Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

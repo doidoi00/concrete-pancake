@@ -23,7 +23,7 @@
     "tikz:svg:dvisvgm": "mkdir -p quartz/static/tikz && find tikz -name '*.pdf' -print0 | xargs -0 -I{} sh -c 'base=\"$(basename \"{}\" .pdf)\"; dvisvgm --pdf --font-format=woff2 -a -o \"quartz/static/tikz/${base}.svg\" \"{}\"'",
     "tikz:opt": "svgo -f quartz/static/tikz",
     "tikz:extract": "node tools/tikz-extract.mjs",
-    "tikz": "npm run tikz:pdf:tectonic && npm run tikz:svg && npm run tikz:opt"
+    "tikz": "npm run tikz:pdf:tectonic && npm run tikz:svg:dvisvgm && npm run tikz:opt"
   },
   "engines": {
     "npm": ">=10.9.2",

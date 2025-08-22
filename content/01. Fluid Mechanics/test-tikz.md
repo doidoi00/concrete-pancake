@@ -17,7 +17,7 @@
         tick label style={font=\small},
         label style={font=\bfseries},
         enlargelimits=false, % Prevent plot limits from extending too far
-        axis background/.style={fill=gray!10}, % Light background for contrast
+contrast
         % Customize tick marks
         xtick distance=1,
         ytick distance=1,

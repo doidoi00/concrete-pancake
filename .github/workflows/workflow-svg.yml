@@ -18,7 +18,7 @@ permissions:
 jobs:
   svg:
     # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
-    if: ${{ github.actor != 'github-actions[bot]' }}
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     concurrency:
       group: tikz-svg-${{ github.ref }}
@@ -26,16 +26,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Detect Tikz-related changes
-        id: changes
-        uses: dorny/paths-filter@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          filters: |
-            tikz:
-              - 'tikz/**'
-              - 'quartz/util/**'
 
       # Node가 꼭 필요하진 않지만, svgo나 스크립트를 쓸 수 있게 세팅
       - uses: actions/setup-node@v4
@@ -55,7 +45,6 @@ jobs:
 
       # (선택) 패키지 설치: package.json에 svgo/chokidar-cli가 있다면
       - name: Install deps (optional)
-        if: ${{ steps.changes.outputs.tikz == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
           if [ -f package.json ]; then
             if [ -f package-lock.json ]; then
@@ -67,7 +56,6 @@ jobs:
 
       # Tectonic bundle 캐시
       - name: Cache Tectonic bundle
-        if: ${{ steps.changes.outputs.tikz == 'true' || github.event_name == 'workflow_dispatch' }}
         uses: actions/cache@v4
         with:
           path: |
@@ -78,20 +66,17 @@ jobs:
             ${{ runner.os }}-tectonic-bundle-
 
       # Tectonic(LaTeX 엔진) 설치
-      - if: ${{ steps.changes.outputs.tikz == 'true' || github.event_name == 'workflow_dispatch' }}
-        uses: wtfjoke/setup-tectonic@v2
+      - uses: wtfjoke/setup-tectonic@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # PDF→SVG 변환기 + CJK 폰트
       - name: Install dvisvgm & gs & fonts
-        if: ${{ steps.changes.outputs.tikz == 'true' || github.event_name == 'workflow_dispatch' }}
         run: sudo apt-get update && sudo apt-get install -y dvisvgm ghostscript fonts-noto-cjk
 
       # Generate SVG .tex → .pdf → .svg → svgo
       #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)
       - name: Build SVGs from tikz
-        if: ${{ steps.changes.outputs.tikz == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
           mkdir -p quartz/static/tikz
           node quartz/util/tikz-extract.mjs
@@ -99,17 +84,14 @@ jobs:
           npm run tikz:svg
 
       - name: format() after dvisvgm
-        if: ${{ steps.changes.outputs.tikz == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
           echo '--- dvisvgm 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
       - name: Inline SVGs
-        if: ${{ steps.changes.outputs.tikz == 'true' || github.event_name == 'workflow_dispatch' }}
         run: node quartz/util/svg-inline.mjs
 
       - name: format() after post script
-        if: ${{ steps.changes.outputs.tikz == 'true' || github.event_name == 'workflow_dispatch' }}
         run: |
           echo '--- post script 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true

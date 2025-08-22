@@ -32,6 +32,10 @@ jobs:
         with:
           node-version: '22'
           check-latest: true
+          cache: 'npm'
+          cache-dependency-path: |
+            package.json
+            **/package.json
 
       - name: Ensure npm >= 10.9.2
         run: |
@@ -49,6 +53,17 @@ jobs:
               npm install --no-audit --no-fund
             fi
           fi
+
+      # Tectonic bundle 캐시
+      - name: Cache Tectonic bundle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/Tectonic
+            ~/.local/share/Tectonic
+          key: ${{ runner.os }}-tectonic-bundle-v1
+          restore-keys: |
+            ${{ runner.os }}-tectonic-bundle-
 
       # Tectonic(LaTeX 엔진) 설치
       - uses: wtfjoke/setup-tectonic@v2

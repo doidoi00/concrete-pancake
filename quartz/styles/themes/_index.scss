@@ -5998,7 +5998,7 @@ html {
       background-color: var(--admonition-bg-color);
     }
     &[data-callout="code"] {
-      --callout-color: var(--callout-code);
+      --callout-color: var(--callout-info);
 
       background-color: var(--admonition-bg-color);
     }

@@ -16,8 +16,7 @@
         grid=major,
         tick label style={font=\small},
         label style={font=\bfseries},
-        enlargelimits=false, % Prevent plot limits from extending too far
-contrast
+        enlargelimits=false, % Prevent plot limits from extending too far contrast
         % Customize tick marks
         xtick distance=1,
         ytick distance=1,

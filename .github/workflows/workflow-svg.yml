@@ -73,7 +73,7 @@ jobs:
       - name: Cache APT archives (dvisvgm/gs/fonts)
         uses: actions/cache@v4
         with:
-          path: .apt-cache
+          path: ${{ runner.temp }}/apt-archives
           key: ${{ runner.os }}-apt-dvisvgm-gs-fonts-v1
           restore-keys: |
             ${{ runner.os }}-apt-
@@ -83,11 +83,11 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          # Ensure APT archive cache directory exists for first-run
-          mkdir -p .apt-cache/partial
+          # Ensure APT archive cache directory exists for first-run (outside repo)
+          mkdir -p "$RUNNER_TEMP/apt-archives/partial"
           sudo apt-get update
-          # Use a workspace-local APT archive dir so actions/cache can persist downloads
-          sudo apt-get -o dir::cache::archives=$PWD/.apt-cache install -y --no-install-recommends \
+          # Use a temp-based APT archive dir so actions/cache can persist downloads
+          sudo apt-get -o dir::cache::archives="$RUNNER_TEMP/apt-archives" install -y --no-install-recommends \
             dvisvgm ghostscript mupdf-tools fonts-noto-cjk
 
       - name: Check dvisvgm / mutool

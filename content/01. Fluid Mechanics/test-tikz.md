@@ -29,7 +29,7 @@
         domain y=-3:3, 
         z buffer=sort, 
         faceted color=mapped color, 
-        shader=interp, 
+        shader=flat, 
         line width=0.3pt, % Thin colored mesh lines
     ]
     {exp(-(x^2+y^2)/2) * sin(deg(sqrt(x^2+y^2)*3))}; 

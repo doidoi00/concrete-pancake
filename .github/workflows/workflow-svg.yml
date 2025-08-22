@@ -37,22 +37,34 @@ jobs:
             package.json
             **/package.json
 
-      - name: Ensure npm >= 10.9.2
-        run: |
-          npm -v
-          npm i -g npm@^10.9.2 --no-package-lock
-          npm -v
+      - name: Restore node_modules cache
+        id: modules_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-22-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-22-
 
-      # (선택) 패키지 설치: package.json에 svgo/chokidar-cli가 있다면
       - name: Install deps (optional)
+        if: ${{ steps.modules_cache.outputs.cache-hit != 'true' }}
         run: |
           if [ -f package.json ]; then
             if [ -f package-lock.json ]; then
-              npm ci
+              npm ci --prefer-offline --no-audit --no-fund
             else
               npm install --no-audit --no-fund
             fi
           fi
+
+      - name: Save node_modules cache
+        if: ${{ steps.modules_cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-22-${{ hashFiles('**/package.json') }}
 
       # Tectonic bundle 캐시
       - name: Cache Tectonic bundle

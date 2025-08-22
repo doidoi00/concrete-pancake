@@ -83,6 +83,8 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
+          # Ensure APT archive cache directory exists for first-run
+          mkdir -p .apt-cache/partial
           sudo apt-get update
           # Use a workspace-local APT archive dir so actions/cache can persist downloads
           sudo apt-get -o dir::cache::archives=$PWD/.apt-cache install -y --no-install-recommends \

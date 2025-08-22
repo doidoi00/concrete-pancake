@@ -70,9 +70,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Cache APT archives (dvisvgm/gs/fonts)
+        uses: actions/cache@v4
+        with:
+          path: .apt-cache
+          key: ${{ runner.os }}-apt-dvisvgm-gs-fonts-v1
+          restore-keys: |
+            ${{ runner.os }}-apt-
+
       # PDF→SVG 변환기 + CJK 폰트
       - name: Install dvisvgm & gs & fonts
-        run: sudo apt-get update && sudo apt-get install -y dvisvgm ghostscript fonts-noto-cjk
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          # Use a workspace-local APT archive dir so actions/cache can persist downloads
+          sudo apt-get -o dir::cache::archives=$PWD/.apt-cache install -y --no-install-recommends \
+            dvisvgm ghostscript fonts-noto-cjk
 
       # Generate SVG .tex → .pdf → .svg → svgo
       #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)

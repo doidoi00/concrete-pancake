@@ -101,7 +101,7 @@ jobs:
           sudo apt-get update
           # Use a temp-based APT archive dir so actions/cache can persist downloads
           sudo apt-get -o dir::cache::archives="$RUNNER_TEMP/apt-archives" install -y --no-install-recommends \
-            inkscape dvisvgm ghostscript mupdf-tools fonts-noto-cjk
+            inkscape dvisvgm ghostscript mupdf-tools poppler-utils xvfb fonts-noto-cjk
 
       - name: Check dvisvgm / mutool
         run: |

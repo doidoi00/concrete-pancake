@@ -70,8 +70,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache APT archives (dvisvgm/gs/fonts)
-        uses: actions/cache@v4
+      - name: Restore APT archives (dvisvgm/gs/fonts)
+        id: apt_cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/apt-archives
           key: ${{ runner.os }}-apt-dvisvgm-gs-fonts-v1
@@ -96,6 +97,21 @@ jobs:
           dvisvgm --version || true
           echo '--- mutool -v ---'
           mutool -v || true
+
+      - name: Prepare APT cache for save
+        if: always()
+        run: |
+          sudo rm -f "$RUNNER_TEMP/apt-archives/lock" || true
+          sudo rm -rf "$RUNNER_TEMP/apt-archives/partial" || true
+          sudo find "$RUNNER_TEMP/apt-archives" -mindepth 1 -type f ! -name '*.deb' -delete || true
+          sudo chmod -R a+r "$RUNNER_TEMP/apt-archives" || true
+
+      - name: Save APT archives
+        if: always() && steps.apt_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/apt-archives
+          key: ${{ runner.os }}-apt-dvisvgm-gs-fonts-v1
 
       # Generate SVG .tex → .pdf → .svg → svgo
       #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)

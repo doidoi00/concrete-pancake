@@ -80,7 +80,7 @@ jobs:
             ${{ runner.os }}-apt-
 
       # PDF→SVG 변환기 + CJK 폰트
-      - name: Install dvisvgm & gs & fonts
+      - name: Install inkscape, dvisvgm & fonts
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
@@ -89,7 +89,7 @@ jobs:
           sudo apt-get update
           # Use a temp-based APT archive dir so actions/cache can persist downloads
           sudo apt-get -o dir::cache::archives="$RUNNER_TEMP/apt-archives" install -y --no-install-recommends \
-            dvisvgm ghostscript mupdf-tools fonts-noto-cjk
+            inkscape dvisvgm ghostscript mupdf-tools fonts-noto-cjk
 
       - name: Check dvisvgm / mutool
         run: |
@@ -97,6 +97,11 @@ jobs:
           dvisvgm --version || true
           echo '--- mutool -v ---'
           mutool -v || true
+
+      - name: Check inkscape
+        run: |
+          echo '--- inkscape --version ---'
+          inkscape --version || true
 
       - name: Prepare APT cache for save
         if: always()
@@ -125,9 +130,9 @@ jobs:
           npm run tikz:pdf:tectonic
           npm run tikz:svg
 
-      - name: format() after dvisvgm
+      - name: format() after inkscape
         run: |
-          echo '--- dvisvgm 직후 ---'
+          echo '--- inkscape 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
       - name: Inline SVGs

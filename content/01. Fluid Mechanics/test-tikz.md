@@ -16,23 +16,23 @@
         grid=major,
         tick label style={font=\small},
         label style={font=\bfseries},
-        enlargelimits=false, % Prevent plot limits from extending too far contrast
+        enlargelimits=false, 
         % Customize tick marks
         xtick distance=1,
         ytick distance=1,
         ztick distance=0.5,
     ]
     \addplot3[
-        surf, % Plot as a surface
-        samples=50, % Number of samples in x-direction
-        samples y=50, % Number of samples in y-direction
-        domain=-3:3, % Domain for x-axis
-        domain y=-3:3, % Domain for y-axis
-        z buffer=sort, % Correctly render overlapping surfaces
-        faceted color=black, % Color of the mesh lines
-        shader=interp, % Smooth interpolation between samples
+        surf, 
+        samples=50, 
+        domain=-3:3, 
+        domain y=-3:3, 
+        z buffer=sort, 
+        faceted color=mapped color, 
+        shader=interp, 
+        line width=0.3pt, % Thin colored mesh lines
     ]
-    {exp(-(x^2+y^2)/2) * sin(deg(sqrt(x^2+y^2)*3))}; % Example function
+    {exp(-(x^2+y^2)/2) * sin(deg(sqrt(x^2+y^2)*3))}; 
     \end{axis}
 \end{tikzpicture}
 \end{document}

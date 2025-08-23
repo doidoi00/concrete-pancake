@@ -101,7 +101,7 @@ jobs:
           sudo apt-get update
           # Use a temp-based APT archive dir so actions/cache can persist downloads
           sudo apt-get -o dir::cache::archives="$RUNNER_TEMP/apt-archives" install -y --no-install-recommends \
-            inkscape dvisvgm ghostscript mupdf-tools poppler-utils xvfb fonts-noto-cjk
+            dvisvgm ghostscript mupdf-tools poppler-utils xvfb fonts-noto-cjk
 
       - name: Check dvisvgm / mutool
         run: |
@@ -109,11 +109,6 @@ jobs:
           dvisvgm --version || true
           echo '--- mutool -v ---'
           mutool -v || true
-
-      - name: Check inkscape
-        run: |
-          echo '--- inkscape --version ---'
-          inkscape --version || true
 
       - name: Prepare APT cache for save
         if: always()

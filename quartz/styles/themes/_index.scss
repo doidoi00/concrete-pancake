@@ -7206,7 +7206,7 @@ body {
     stroke: #000 !important;
   }
   svg.tikzjax-svg path[fill="#fff"]{
-    fill: "none" !important;
+    opacity: 0 !important;
   }
 }
 :root:root:root {

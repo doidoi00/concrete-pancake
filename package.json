@@ -20,7 +20,7 @@
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
     "tikz:pdf:tectonic": "find tikz -name '*.tex' -print0 | xargs -0 -I{} sh -c 'dir=\"$(dirname \"{}\")\"; tectonic -X compile --keep-intermediates --outdir \"$dir\" \"{}\"'",
 
-    "tikz:svg": "mkdir -p quartz/static/tikz && find tikz -name '*.pdf' -print0 | xargs -0 -I{} sh -c 'base=\"$(basename \"{}\" .pdf)\"; DVISVGM_PDF_PROC=mutool dvisvgm --pdf --font-format=woff2 -a -o \"quartz/static/tikz/${base}.svg\" \"{}\"'",
+    "tikz:svg": "mkdir -p quartz/static/tikz tmp && find tikz -name '*.pdf' -print0 | xargs -0 -I{} sh -c 'pdf=\"{}\"; base=\"$(basename \"$pdf\" .pdf)\"; out=\"quartz/static/tikz/${base}.svg\"; log=\"tmp/${base}.dvisvgm.log\"; DVISVGM_PDF_PROC=mutool dvisvgm --pdf --font-format=woff2 -a -o \"$out\" \"$pdf\" >\"$log\" 2>&1 || true; if [ ! -s \"$out\" ] || [ $(wc -c < \"$out\") -lt 2000 ] || ! grep -q \"<path\" \"$out\"; then echo \"[fallback] pdftocairo (scaled) : $pdf -> $out\"; pdftocairo -svg -r 450 -antialias best -paperw 1200 -paperh 900 -expand \"$pdf\" \"$out\"; fi'",
     "tikz:opt": "svgo -f quartz/static/tikz",
     "tikz:extract": "node tools/tikz-extract.mjs",
     "tikz": "npm run tikz:pdf:tectonic && npm run tikz:svg && npm run tikz:opt"

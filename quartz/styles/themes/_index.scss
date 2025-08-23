@@ -7200,7 +7200,7 @@ body {
     -webkit-mask-image: var(--moon-icon);
   }
   svg.tikzjax-svg path[stroke="#000"]{
-    stroke: "currentColor" !important;
+    stroke: #fff !important;
   }
   svg.tikzjax-svg path[stroke="#fff"]{
     stroke: #000 !important;

@@ -137,9 +137,9 @@ jobs:
           npm run tikz:pdf:tectonic
           npm run tikz:svg
 
-      - name: format() after inkscape
+      - name: format() after tikz:svg
         run: |
-          echo '--- inkscape 직후 ---'
+          echo '--- tikz:svg 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
       - name: Inline SVGs

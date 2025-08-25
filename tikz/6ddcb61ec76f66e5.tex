@@ -1,0 +1,18 @@
+\documentclass[tikz]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+
+\begin{document}
+	\begin{tikzpicture}
+			\begin{axis}[
+				xmin=-9, xmax=9, 
+				ymin=-9, ymax=9,
+				axis lines=middle,
+				xlabel={$x$}, ylabel={$y$},
+				grid=major, every major grid/.style={very thin, color=gray},
+			]
+				
+			\end{axis}
+	\end{tikzpicture}
+\end{document}
+

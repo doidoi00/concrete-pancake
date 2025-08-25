@@ -1,0 +1,18 @@
+\documentclass[tikz]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\begin{document}
+\begin{tikzpicture}
+   \begin{axis}
+    \addplot3[
+        surf,
+    ]
+    coordinates {
+    (0,0,0) (0,1,0) (0,2,0)
+    (1,0,0) (1,1,0.6) (1,2,0.7)
+    (2,0,0) (2,1,0.7) (2,2,1.8)
+    };
+   \end{axis}
+\end{tikzpicture}
+\end{document}
+

@@ -1,0 +1,19 @@
+\documentclass[tikz]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[stack plots=y,area style,enlarge x limits=false,]
+\addplot coordinates {
+(0,1) (1,1) (2,2) (3,2)
+}\closedcycle;
+\addplot coordinates {
+(0,1) (1,1) (2,2) (3,2)
+}\closedcycle;
+\addplot coordinates {
+(0,1) (1,1) (2,2) (3,2)
+}\closedcycle;
+\end{axis}
+\end{tikzpicture}
+\end{document}
+

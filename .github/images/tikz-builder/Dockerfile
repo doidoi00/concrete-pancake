@@ -9,8 +9,7 @@ RUN apt-get update && \
       poppler-utils \
       fonts-noto-cjk \
       dvisvgm \
-      tectonic && \
-    rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 # dvisvgm이 PDF 처리기로 mutool 사용
 ENV DVISVGM_PDF_PROC=mutool

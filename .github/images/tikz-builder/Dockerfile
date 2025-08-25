@@ -15,8 +15,10 @@ RUN apt-get update && \
 
 ARG TECTONIC_VERSION=0.15.0
 
-RUN curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net |sh \
-    && tectonic --version
+RUN set -eux; \
+    curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh; \
+    install -m 0755 ./tectonic /usr/local/bin/tectonic; \
+    rm -f ./tectonic; \
+    tectonic --version
 
-# dvisvgm이 PDF 처리기로 mutool 사용
 ENV DVISVGM_PDF_PROC=mutool

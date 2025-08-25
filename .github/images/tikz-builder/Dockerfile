@@ -15,6 +15,3 @@ RUN apt-get update && \
 
 # dvisvgm이 PDF 처리기로 mutool 사용
 ENV DVISVGM_PDF_PROC=mutool
-
-# (선택) 기본 작업 디렉터리
-WORKDIR /work

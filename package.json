@@ -19,11 +19,9 @@
     "test": "tsx --test",
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
     "tikz:pdf:tectonic": "find tikz -name '*.tex' -print0 | xargs -0 -I{} sh -c 'dir=\"$(dirname \"{}\")\"; tectonic -X compile --keep-intermediates --outdir \"$dir\" \"{}\"'",
-    "tikz:svg": "mkdir -p quartz/static/tikz tmp && find tikz -name '*.pdf' -print0 | xargs -0 -I{} bash -ceu 'set -o pipefail; pdf=\"{}\"; base=\"$(basename \"$pdf\" .pdf)\"; out=\"quartz/static/tikz/${base}.svg\"; log=\"tmp/${base}.dvisvgm.log\"; need=0; echo \"[dvisvgm] $pdf -> $out\" | tee \"$log\"; NO_AT_BRIDGE=1 DVISVGM_COLORS=0 DVISVGM_PDF_PROC=mutool dvisvgm --pdf -v15 --font-format=woff2 -a --message=\"page {?pageno} written to {?svgfile}\" -o \"$out\" \"$pdf\" 2>&1 | tee -a \"$log\"; status=${PIPESTATUS[0]}; if [ $status -ne 0 ]; then need=1; fi; if grep -Eqi \"^(ERROR:|fatal:)|unsupported|isn.t supported|unknown special|cannot (open|find)|missing|shading|pattern|blend mode|transparen\" \"$log\"; then need=1; fi; if [ ! -s \"$out\" ] || [ $(wc -c < \"$out\") -lt 4096 ] || ! grep -Eq \"<(path|polygon|polyline|rect|circle|ellipse|line|image)\\b\" \"$out\"; then need=1; fi; if [ \"$need\" -eq 1 ]; then echo \"[fallback] pdftocairo: $pdf -> $out\" | tee -a \"$log\"; pdftocairo -svg -r 300 -antialias best -paperw 1200 -paperh 900 -expand \"$pdf\" \"$out\" 2>&1 | tee -a \"$log\"; fi'"
-    ,
-    "tikz:opt": "svgo -f quartz/static/tikz",
+    "tikz:svg": "mkdir -p quartz/static/tikz && find tikz -name '*.pdf' -print0 | xargs -0 -I{} sh -c 'pdf=\"{}\"; base=\"$(basename \"$pdf\" .pdf)\"; out=\"quartz/static/tikz/${base}.svg\"; pdftocairo -svg -r 450 -antialias best -paper match \"$pdf\" \"$out\"'",
     "tikz:extract": "node tools/tikz-extract.mjs",
-    "tikz": "npm run tikz:pdf:tectonic && npm run tikz:svg && npm run tikz:opt"
+    "tikz": "npm run tikz:pdf:tectonic && npm run tikz:svg"
   },
   "engines": {
     "npm": ">=10.9.2",

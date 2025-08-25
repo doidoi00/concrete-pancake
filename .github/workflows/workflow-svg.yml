@@ -29,6 +29,10 @@ jobs:
       group: tikz-svg-${{ github.ref }}
       cancel-in-progress: false
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - uses: actions/checkout@v4
 

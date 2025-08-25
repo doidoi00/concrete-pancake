@@ -101,28 +101,7 @@ jobs:
           sudo apt-get update
           # Use a temp-based APT archive dir so actions/cache can persist downloads
           sudo apt-get -o dir::cache::archives="$RUNNER_TEMP/apt-archives" install -y --no-install-recommends \
-            ghostscript mupdf-tools poppler-utils fonts-noto-cjk
-
-      - name: Build & install dvisvgm 3.5 (from source)
-        env:
-          DVISVGM_VERSION: "3.5"
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          set -euxo pipefail
-          if dvisvgm --version 2>/dev/null | grep -Eq 'dvisvgm 3\.[5-9]'; then
-            echo "dvisvgm already >= 3.5"
-          else
-            # Build deps (keep downloads cached)
-            sudo apt-get -o dir::cache::archives="$RUNNER_TEMP/apt-archives" install -y --no-install-recommends \
-              build-essential autoconf automake libtool pkg-config libfreetype6-dev zlib1g-dev libkpathsea-dev curl ca-certificates
-            # Fetch & build
-            curl -fsSL -o /tmp/dvisvgm.tar.gz "https://github.com/mgieseki/dvisvgm/releases/download/${DVISVGM_VERSION}/dvisvgm-${DVISVGM_VERSION}.tar.gz"
-            tar -C /tmp -xzf /tmp/dvisvgm.tar.gz
-            cd "/tmp/dvisvgm-${DVISVGM_VERSION}"
-            ./configure --enable-bundled-libs
-            make -j"$(nproc)"
-            sudo make install
-          fi
+            ghostscript mupdf-tools poppler-utils fonts-noto-cjk dvisvgm
 
       - name: Check dvisvgm / mutool
         run: |

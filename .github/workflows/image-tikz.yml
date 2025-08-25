@@ -3,7 +3,7 @@ on:
   push:
     branches: [v4]
     paths:
-      - '.github/images/**'
+      - '.github/images/tikz-builder/**'
       - '.github/workflows/image-tikz.yml'
   workflow_dispatch: {}
 

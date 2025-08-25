@@ -14,28 +14,23 @@ on:
 
 permissions:
   contents: write
+  packages: read
 
 jobs:
   svg:
     # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/tikz-builder:latest
+      options: --init
+
     concurrency:
       group: tikz-svg-${{ github.ref }}
       cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v4
-
-      # Node가 꼭 필요하진 않지만, svgo나 스크립트를 쓸 수 있게 세팅
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          check-latest: true
-          cache: 'npm'
-          cache-dependency-path: |
-            package.json
-            **/package.json
 
       - name: Restore node_modules cache
         id: modules_cache
@@ -66,64 +61,12 @@ jobs:
             node_modules
           key: ${{ runner.os }}-node-modules-22-${{ hashFiles('**/package.json') }}
 
-      # Tectonic bundle 캐시
-      - name: Cache Tectonic bundle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/Tectonic
-            ~/.local/share/Tectonic
-          key: ${{ runner.os }}-tectonic-bundle-v1
-          restore-keys: |
-            ${{ runner.os }}-tectonic-bundle-
-
-      # Tectonic(LaTeX 엔진) 설치
-      - uses: wtfjoke/setup-tectonic@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Restore APT archives (dvisvgm/gs/fonts)
-        id: apt_cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ runner.temp }}/apt-archives
-          key: ${{ runner.os }}-apt-dvisvgm-gs-fonts-v1
-          restore-keys: |
-            ${{ runner.os }}-apt-
-
-      # PDF tools & fonts (runtime)
-      - name: Install PDF tools & fonts (runtime)
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          # Ensure APT archive cache directory exists for first-run (outside repo)
-          mkdir -p "$RUNNER_TEMP/apt-archives/partial"
-          sudo apt-get update
-          # Use a temp-based APT archive dir so actions/cache can persist downloads
-          sudo apt-get -o dir::cache::archives="$RUNNER_TEMP/apt-archives" install -y --no-install-recommends \
-            ghostscript mupdf-tools poppler-utils fonts-noto-cjk dvisvgm
-
       - name: Check dvisvgm / mutool
         run: |
           echo '--- dvisvgm --version ---'
           dvisvgm --version || true
           echo '--- mutool -v ---'
           mutool -v || true
-
-      - name: Prepare APT cache for save
-        if: always()
-        run: |
-          sudo rm -f "$RUNNER_TEMP/apt-archives/lock" || true
-          sudo rm -rf "$RUNNER_TEMP/apt-archives/partial" || true
-          sudo find "$RUNNER_TEMP/apt-archives" -mindepth 1 -type f ! -name '*.deb' -delete || true
-          sudo chmod -R a+r "$RUNNER_TEMP/apt-archives" || true
-
-      - name: Save APT archives
-        if: always() && steps.apt_cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ runner.temp }}/apt-archives
-          key: ${{ runner.os }}-apt-dvisvgm-gs-fonts-v1
 
       # Generate SVG .tex → .pdf → .svg → svgo
       #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)

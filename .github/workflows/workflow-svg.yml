@@ -32,7 +32,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
 
       - name: Restore node_modules cache
@@ -76,7 +76,7 @@ jobs:
             ${{ runner.os }}-tectonic-bundle-
 
       # Tectonic(LaTeX 엔진) 설치
-      - uses: wtfjoke/setup-tectonic@v2
+      - uses: wtfjoke/setup-tectonic@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -125,7 +125,7 @@ jobs:
 
       # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
       - name: Commit SVG artifacts
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
           branch: publish
           commit_message: "chore(svg): update tikz SVGs"

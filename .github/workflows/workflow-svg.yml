@@ -3,13 +3,12 @@ name: tikz-to-svg (prebuild)
 on:
   push:
     branches: [ v4 ]
-    # 티크스 혹은 문서만 바뀔 때 동작 (원하면 범위를 줄이거나 늘리면 됨)
     paths:
       - 'tikz/**'
       - 'content/**'
       - '.github/workflows/workflow-svg.yml'
       - 'quartz/util/tikz-extract.mjs'
-      - '!quartz/static/tikz/**'   # 산출물 자체 변경만으로는 트리거하지 않기
+      - '!quartz/static/tikz/**' 
   workflow_dispatch: {}
 
 permissions:
@@ -18,7 +17,6 @@ permissions:
 
 jobs:
   svg:
-    # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     container:
@@ -27,7 +25,7 @@ jobs:
 
     concurrency:
       group: tikz-svg-${{ github.ref }}
-      cancel-in-progress: false
+      cancel-in-progress: true
 
     defaults:
       run:

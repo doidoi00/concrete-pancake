@@ -1,6 +1,5 @@
 FROM node:22-bookworm-slim
 
-# 필수 도구 설치: dvisvgm, ghostscript, mutool(poppler-utils는 pdfinfo 등), Noto CJK 폰트, git, tectonic
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       ca-certificates \
@@ -22,7 +21,7 @@ RUN set -eux; \
     arm64) tt_arch="aarch64-unknown-linux-gnu" ;; \
     *) echo "unsupported arch: $arch"; exit 1 ;; \
   esac; \
-  url="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40${TECTONIC_VERSION}/tectonic-${TECTONIC_VERSION}-${tt_arch}.tar.gz"; \
+  url="https://github.com/tectonic-typesetting/tectonic/releases/download/continuous/tectonic-${TECTONIC_VERSION}+20250814-${tt_arch}.tar.gz"; \
   curl -fsSL "$url" -o /tmp/tt.tgz; \
   tar -xzf /tmp/tt.tgz -C /usr/local/bin tectonic; \
   rm -f /tmp/tt.tgz; \

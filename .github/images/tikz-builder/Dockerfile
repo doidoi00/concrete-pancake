@@ -26,7 +26,7 @@ RUN set -eux; \
   curl -fsSL "$url" -o /tmp/tt.tgz; \
   tar -xzf /tmp/tt.tgz -C /usr/local/bin tectonic; \
   rm -f /tmp/tt.tgz; \
-  tectonic -- --version
+  tectonic --help
 
 # dvisvgm이 PDF 처리기로 mutool 사용
 ENV DVISVGM_PDF_PROC=mutool

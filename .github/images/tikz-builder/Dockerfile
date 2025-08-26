@@ -8,8 +8,6 @@ RUN apt-get update && \
       mupdf-tools \
       poppler-utils \
       fonts-noto-cjk \
-      nodejs \
-      npm \
       curl \
       dvisvgm \
     && update-ca-certificates \
@@ -17,6 +15,9 @@ RUN apt-get update && \
 
 ARG TECTONIC_VERSION=0.15.0
 
+RUN set -eux; \
+  curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s 22; \
+  node -v
 
 
 RUN set -eux; \

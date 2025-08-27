@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM node:24-bookworm-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -35,3 +35,5 @@ RUN set -eux; \
 
 # dvisvgm이 PDF 처리기로 mutool 사용
 ENV DVISVGM_PDF_PROC=mutool
+
+docker pull node:current-alpine3.22

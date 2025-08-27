@@ -34,6 +34,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          check-latest: true
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: |
+          set -euxo pipefail
+          if [ -f package.json ]; then
+            npm ci --prefer-offline --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+
       # Tectonic bundle 캐시
       - name: Cache Tectonic bundle
         uses: actions/cache@v4

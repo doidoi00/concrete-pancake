@@ -14,12 +14,6 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 ARG TECTONIC_VERSION=0.15.0
-
-RUN set -eux; \
-  curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s 22; \
-  node -v
-
-
 RUN set -eux; \
   arch="$(dpkg --print-architecture)"; \
   case "$arch" in \
@@ -35,5 +29,3 @@ RUN set -eux; \
 
 # dvisvgm이 PDF 처리기로 mutool 사용
 ENV DVISVGM_PDF_PROC=mutool
-
-docker pull node:current-alpine3.22

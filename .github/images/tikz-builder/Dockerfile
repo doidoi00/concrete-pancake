@@ -8,6 +8,7 @@ RUN apt-get update && \
       mupdf-tools \
       poppler-utils \
       fonts-noto-cjk \
+      rsync \
       curl \
       dvisvgm \
     && update-ca-certificates \

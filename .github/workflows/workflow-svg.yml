@@ -34,36 +34,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-
-      - name: Restore node_modules cache
-        id: modules_cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            node_modules
-          key: ${{ runner.os }}-node-modules-22-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-22-
-
-      - name: Install deps (optional)
-        if: ${{ steps.modules_cache.outputs.cache-hit != 'true' }}
-        run: |
-          if [ -f package.json ]; then
-            if [ -f package-lock.json ]; then
-              npm ci --prefer-offline --no-audit --no-fund
-            else
-              npm install --no-audit --no-fund
-            fi
-          fi
-
-      - name: Save node_modules cache
-        if: ${{ steps.modules_cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            node_modules
-          key: ${{ runner.os }}-node-modules-22-${{ hashFiles('**/package.json') }}
-
       # Tectonic bundle 캐시
       - name: Cache Tectonic bundle
         uses: actions/cache@v4
@@ -74,11 +44,6 @@ jobs:
           key: ${{ runner.os }}-tectonic-bundle-v1
           restore-keys: |
             ${{ runner.os }}-tectonic-bundle-
-
-      # Tectonic(LaTeX 엔진) 설치
-      - uses: wtfjoke/setup-tectonic@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check dvisvgm / mutool
         run: |

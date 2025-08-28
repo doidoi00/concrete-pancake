@@ -32,7 +32,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
 
       - name: Restore node_modules cache
@@ -91,6 +91,17 @@ jobs:
           echo '--- tikz:svg 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
+      - name: PDFs → PNGs (transparent)
+        run: |
+          set -euxo pipefail
+          find tikz -type f -name '*.pdf' -print0 | \
+            while IFS= read -r -d '' pdf; do
+            base="${pdf%.pdf}"
+            gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=pngalpha -r450 \
+               -dTextAlphaBits=4 -dGraphicsAlphaBits=4 \
+               -o "${base}.png" "$pdf"
+          done
+
       - name: Inline SVGs
         run: node quartz/util/svg-inline.mjs
 
@@ -100,16 +111,20 @@ jobs:
           grep -n "format(" quartz/static/tikz/*.svg || true
 
       - name: Checkout publish branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: publish
           path: _publish
 
-      - name: Sync artifacts into publish branch
+      - name: Sync → _publish with rsync
         run: |
           set -euxo pipefail
-          mkdir -p _publish/quartz/static/tikz
-          rsync -a --delete quartz/static/tikz/ _publish/quartz/static/tikz/
+          # .gitignore를 존중하고, _publish 자체와 .git은 제외
+          rsync -a --delete \
+            --filter=':- .gitignore' \
+            --exclude='_publish/' \
+            --exclude='.git/' \
+            ./ _publish/
 
       - name: Commit & push artifacts to publish
         working-directory: _publish
@@ -120,7 +135,8 @@ jobs:
           GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
         run: |
           set -euxo pipefail
-          git add -A quartz/static/tikz
+          git config --global --add safe.directory /__w/concrete-pancake/concrete-pancake/_publish
+          git add -A
           if ! git diff --cached --quiet; then
             git commit -m "chore(assets): update tikz outputs"
             git push origin HEAD:publish

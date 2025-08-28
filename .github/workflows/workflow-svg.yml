@@ -95,7 +95,7 @@ jobs:
         run: |
           set -euxo pipefail
           /opt/pymu/bin/python3 - <<'PY'
-          import pymupdf, json, glob, pathlib
+          import fitz, json, glob, pathlib
 
           def rgbint_to_tuple(c): return ((c>>16)&255, (c>>8)&255, c&255)
 

@@ -131,7 +131,7 @@ jobs:
           GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
         run: |
           set -euxo pipefail
-          git add -A quartz/static/tikz
+          git add .
           if ! git diff --cached --quiet; then
             git commit -m "chore(assets): update tikz outputs"
             git push origin HEAD:publish

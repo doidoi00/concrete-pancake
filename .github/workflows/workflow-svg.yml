@@ -34,6 +34,34 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+
+      - name: Restore node_modules cache
+        id: modules_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-22-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-22-
+
+      - name: Install deps (optional)
+        if: ${{ steps.modules_cache.outputs.cache-hit != 'true' }}
+        run: |
+            if [ -f package-lock.json ]; then
+              npm ci --prefer-offline --no-audit --no-fund
+            else
+              npm install --no-audit --no-fund
+            fi
+
+      - name: Save node_modules cache
+        if: ${{ steps.modules_cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-22-${{ hashFiles('**/package.json') }}
+
       # Tectonic bundle 캐시
       - name: Cache Tectonic bundle
         uses: actions/cache@v4
@@ -45,12 +73,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-tectonic-bundle-
 
-      - name: Check dvisvgm / mutool
-        run: |
-          echo '--- dvisvgm --version ---'
-          dvisvgm --version || true
-          echo '--- mutool -v ---'
-          mutool -v || true
 
       # Generate SVG .tex → .pdf → .svg → svgo
       #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)
@@ -77,23 +99,32 @@ jobs:
           echo '--- post script 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
-      - name: Stash working tree (incl. untracked)
-        run: git stash push -u -m "prebuild-stash"
-
-      - name: Checkout publish
-        run:
-          git fetch origin
-          git checkout -B publish origin/publish || git checkout -b publish
-
-      - name: Restore changes
-        run: git stash pop || true
-
-      # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
-      - name: Commit SVG artifacts
-        uses: stefanzweifel/git-auto-commit-action@v6
+        uses: stefanzweifel/git-auto-commit
+      - name: Checkout publish branch
+        uses: actions/checkout@v5
         with:
-          branch: publish
-          commit_message: "chore(svg): update tikz SVGs"
-          push_options: --force-with-lease
+          ref: publish
+          path: _publish
 
-      # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행
+      - name: Sync artifacts into publish branch
+        run: |
+          set -euxo pipefail
+          mkdir -p _publish/quartz/static/tikz
+          rsync -a --delete quartz/static/tikz/ _publish/quartz/static/tikz/
+
+      - name: Commit & push artifacts to publish
+        working-directory: _publish
+        env:
+          GIT_AUTHOR_NAME: ${{ github.actor }}
+          GIT_AUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com
+          GIT_COMMITTER_NAME: ${{ github.actor }}
+          GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
+        run: |
+          set -euxo pipefail
+          git add -A quartz/static/tikz
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(assets): update tikz outputs"
+            git push origin HEAD:publish
+          else
+            echo "No changes to commit."
+          fi

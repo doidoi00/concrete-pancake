@@ -1,4 +1,4 @@
-FROM node:24-trixie-slim
+FROM node:22-trixie-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -8,8 +8,10 @@ RUN apt-get update && \
       mupdf-tools \
       poppler-utils \
       fonts-noto-cjk \
+      rsync \
       curl \
       dvisvgm \
+      python3 python3-pip python3-venv \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
@@ -29,3 +31,12 @@ RUN set -eux; \
 
 # dvisvgm이 PDF 처리기로 mutool 사용
 ENV DVISVGM_PDF_PROC=mutool
+
+# PyMuPDF Settings
+ENV VENV_PATH = /opt/pymu
+
+RUN python3 -m venv "$VENV_PATH" \
+ && "$VENV_PATH/bin/pip" install --upgrade pip \
+ && "$VENV_PATH/bin/pip" install --no-cache-dir "PyMuPDF==1.26.*"
+
+ENV PATH=$VENV_PATH/bin:$PATH

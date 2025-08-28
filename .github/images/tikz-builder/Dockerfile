@@ -37,12 +37,6 @@ ENV VENV_PATH = /opt/pymu
 
 RUN python3 -m venv "$VENV_PATH" \
  && "$VENV_PATH/bin/pip" install --upgrade pip \
- && "$VENV_PATH/bin/pip" install --no-cache-dir "PyMuPDF==1.26.*" \
- && ln -s "$VENV_PATH/bin/python" /usr/local/bin/pymu-python
-
-RUN pymu-python - <<'PY'
-import fitz
-print("PyMuPDF", fitz.__version__)
-PY
+ && "$VENV_PATH/bin/pip" install --no-cache-dir "PyMuPDF==1.26.*"
 
 ENV PATH=$VENV_PATH/bin:$PATH

@@ -3,39 +3,37 @@ name: tikz-to-svg (prebuild)
 on:
   push:
     branches: [ v4 ]
-    # 티크스 혹은 문서만 바뀔 때 동작 (원하면 범위를 줄이거나 늘리면 됨)
     paths:
       - 'tikz/**'
       - 'content/**'
       - '.github/workflows/workflow-svg.yml'
       - 'quartz/util/tikz-extract.mjs'
-      - '!quartz/static/tikz/**'   # 산출물 자체 변경만으로는 트리거하지 않기
+      - '!quartz/static/tikz/**' 
   workflow_dispatch: {}
 
 permissions:
   contents: write
+  packages: read
 
 jobs:
   svg:
-    # github-actions 봇의 커밋으로 재트리거된 경우 스킵하여 루프 방지
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/tikz-builder:latest
+      options: --init
+
     concurrency:
       group: tikz-svg-${{ github.ref }}
-      cancel-in-progress: false
+      cancel-in-progress: true
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - uses: actions/checkout@v4
 
-      # Node가 꼭 필요하진 않지만, svgo나 스크립트를 쓸 수 있게 세팅
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          check-latest: true
-          cache: 'npm'
-          cache-dependency-path: |
-            package.json
-            **/package.json
 
       - name: Restore node_modules cache
         id: modules_cache
@@ -50,13 +48,11 @@ jobs:
       - name: Install deps (optional)
         if: ${{ steps.modules_cache.outputs.cache-hit != 'true' }}
         run: |
-          if [ -f package.json ]; then
             if [ -f package-lock.json ]; then
               npm ci --prefer-offline --no-audit --no-fund
             else
               npm install --no-audit --no-fund
             fi
-          fi
 
       - name: Save node_modules cache
         if: ${{ steps.modules_cache.outputs.cache-hit != 'true' }}
@@ -77,53 +73,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-tectonic-bundle-
 
-      # Tectonic(LaTeX 엔진) 설치
-      - uses: wtfjoke/setup-tectonic@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Restore APT archives (dvisvgm/gs/fonts)
-        id: apt_cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ runner.temp }}/apt-archives
-          key: ${{ runner.os }}-apt-dvisvgm-gs-fonts-v1
-          restore-keys: |
-            ${{ runner.os }}-apt-
-
-      # PDF tools & fonts (runtime)
-      - name: Install PDF tools & fonts (runtime)
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          # Ensure APT archive cache directory exists for first-run (outside repo)
-          mkdir -p "$RUNNER_TEMP/apt-archives/partial"
-          sudo apt-get update
-          # Use a temp-based APT archive dir so actions/cache can persist downloads
-          sudo apt-get -o dir::cache::archives="$RUNNER_TEMP/apt-archives" install -y --no-install-recommends \
-            ghostscript mupdf-tools poppler-utils fonts-noto-cjk dvisvgm
-
-      - name: Check dvisvgm / mutool
-        run: |
-          echo '--- dvisvgm --version ---'
-          dvisvgm --version || true
-          echo '--- mutool -v ---'
-          mutool -v || true
-
-      - name: Prepare APT cache for save
-        if: always()
-        run: |
-          sudo rm -f "$RUNNER_TEMP/apt-archives/lock" || true
-          sudo rm -rf "$RUNNER_TEMP/apt-archives/partial" || true
-          sudo find "$RUNNER_TEMP/apt-archives" -mindepth 1 -type f ! -name '*.deb' -delete || true
-          sudo chmod -R a+r "$RUNNER_TEMP/apt-archives" || true
-
-      - name: Save APT archives
-        if: always() && steps.apt_cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ runner.temp }}/apt-archives
-          key: ${{ runner.os }}-apt-dvisvgm-gs-fonts-v1
 
       # Generate SVG .tex → .pdf → .svg → svgo
       #   (package.json에 아래 스크립트가 있다고 가정: tikz:pdf:tectonic / tikz:svg / tikz:opt / tikz)
@@ -150,23 +99,31 @@ jobs:
           echo '--- post script 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
-      - name: Stash working tree (incl. untracked)
-        run: git stash push -u -m "prebuild-stash"
-
-      - name: Checkout publish
-        run:
-          git fetch origin
-          git checkout -B publish origin/publish || git checkout -b publish
-
-      - name: Restore changes
-        run: git stash pop || true
-
-      # 변경사항 있을 때만 자동 커밋 (static/tikz/*.svg 등)
-      - name: Commit SVG artifacts
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Checkout publish branch
+        uses: actions/checkout@v4
         with:
-          branch: publish
-          commit_message: "chore(svg): update tikz SVGs"
-          push_options: --force-with-lease
+          ref: publish
+          path: _publish
 
-      # 끝. 이후 이 커밋을 감지한 Cloudflare Pages(Git 연동)가 Quartz 빌드 실행
+      - name: Sync artifacts into publish branch
+        run: |
+          set -euxo pipefail
+          mkdir -p _publish/quartz/static/tikz
+          rsync -a --delete quartz/static/tikz/ _publish/quartz/static/tikz/
+
+      - name: Commit & push artifacts to publish
+        working-directory: _publish
+        env:
+          GIT_AUTHOR_NAME: ${{ github.actor }}
+          GIT_AUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com
+          GIT_COMMITTER_NAME: ${{ github.actor }}
+          GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
+        run: |
+          set -euxo pipefail
+          git add -A quartz/static/tikz
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(assets): update tikz outputs"
+            git push origin HEAD:publish
+          else
+            echo "No changes to commit."
+          fi

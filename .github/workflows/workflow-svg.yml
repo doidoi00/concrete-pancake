@@ -99,7 +99,6 @@ jobs:
           echo '--- post script 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
-        uses: stefanzweifel/git-auto-commit
       - name: Checkout publish branch
         uses: actions/checkout@v5
         with:

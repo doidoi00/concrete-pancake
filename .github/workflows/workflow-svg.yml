@@ -115,7 +115,7 @@ jobs:
         with:
           ref: publish
           path: _publish
-          
+
       - name: Sync → _publish with rsync
         run: |
           set -euxo pipefail
@@ -135,7 +135,7 @@ jobs:
           GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
         run: |
           set -euxo pipefail
-          git add .
+          git add -A
           if ! git diff --cached --quiet; then
             git commit -m "chore(assets): update tikz outputs"
             git push origin HEAD:publish

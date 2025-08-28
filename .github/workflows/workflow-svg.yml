@@ -32,7 +32,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
 
       - name: Restore node_modules cache
@@ -99,8 +99,9 @@ jobs:
           echo '--- post script 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
 
+        uses: stefanzweifel/git-auto-commit
       - name: Checkout publish branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: publish
           path: _publish

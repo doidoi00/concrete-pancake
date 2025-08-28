@@ -115,12 +115,16 @@ jobs:
         with:
           ref: publish
           path: _publish
-
-      - name: Sync artifacts into publish branch
+          
+      - name: Sync → _publish with rsync
         run: |
           set -euxo pipefail
-          mkdir -p _publish/quartz/static/tikz
-          rsync -a --delete quartz/static/tikz/ _publish/quartz/static/tikz/
+          # .gitignore를 존중하고, _publish 자체와 .git은 제외
+          rsync -a --delete \
+            --filter=':- .gitignore' \
+            --exclude='_publish/' \
+            --exclude='.git/' \
+            ./ _publish/
 
       - name: Commit & push artifacts to publish
         working-directory: _publish

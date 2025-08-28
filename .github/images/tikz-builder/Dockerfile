@@ -30,3 +30,9 @@ RUN set -eux; \
 
 # dvisvgm이 PDF 처리기로 mutool 사용
 ENV DVISVGM_PDF_PROC=mutool
+
+# Install python & PyMyPDF
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
+ && python3 -m pip install --upgrade pip \
+ && rm -rf /var/lib/apt/lists/* \
+ && pymupdf --version

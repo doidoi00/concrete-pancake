@@ -33,6 +33,6 @@ ENV DVISVGM_PDF_PROC=mutool
 
 # Install python & PyMyPDF
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip pipx \
- && python3 -m pip install --upgrade pipx "PyMuPDF==1.26.*" \
+ && python3 -m pipx install --upgrade pipx "PyMuPDF==1.26.*" \
  && rm -rf /var/lib/apt/lists/* \
  && pymupdf --version

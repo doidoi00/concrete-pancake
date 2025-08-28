@@ -90,6 +90,41 @@ jobs:
         run: |
           echo '--- tikz:svg 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
+      
+      - name: Analyze PDFs with PyMuPDF
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import fitz, json, glob, pathlib
+
+          def rgbint_to_tuple(c): return ((c>>16)&255, (c>>8)&255, c&255)
+
+          out = {}
+          for pdf in glob.glob("tikz/**/*.pdf", recursive=True):
+              doc = fitz.open(pdf)
+              stats = {"pages": len(doc), "text_black":0, "text_white":0, "draw_black":0, "draw_white":0}
+              for page in doc:
+                  # 도형/선 색상 (0..1 float RGB)
+                  for d in page.get_drawings():
+                      col = d.get("color")
+                      fill = d.get("fill")
+                      if col == (0,0,0) or fill == (0,0,0): stats["draw_black"] += 1
+                      if col == (1,1,1) or fill == (1,1,1): stats["draw_white"] += 1
+                  # 텍스트 색상 (정수 0xRRGGBB)
+                  td = page.get_text("dict")
+                  for b in td.get("blocks", []):
+                      for l in b.get("lines", []):
+                          for s in l.get("spans", []):
+                              c = s.get("color")
+                              if isinstance(c, int):
+                                  r,g,b = rgbint_to_tuple(c)
+                                  if (r,g,b) == (0,0,0):   stats["text_black"] += 1
+                                  if (r,g,b) == (255,255,255): stats["text_white"] += 1
+              out[pdf] = stats
+
+          pathlib.Path("tikz-color-report.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+          print(json.dumps(out, ensure_ascii=False, indent=2))
+          PY
 
       - name: PDFs → PNGs (transparent)
         run: |

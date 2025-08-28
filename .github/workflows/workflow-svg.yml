@@ -94,12 +94,12 @@ jobs:
       - name: PDFs → PNGs (transparent)
         run: |
           set -euxo pipefail
-          find quartz/tikz -type f -name '*.pdf' -print0 | \
+          find tikz -type f -name '*.pdf' -print0 | \
             while IFS= read -r -d '' pdf; do
             base="${pdf%.pdf}"
             gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=pngalpha -r450 \
-           -dTextAlphaBits=4 -dGraphicsAlphaBits=4 \
-           -o "${base}.png" "$pdf"
+               -dTextAlphaBits=4 -dGraphicsAlphaBits=4 \
+               -o "${base}.png" "$pdf"
           done
 
       - name: Inline SVGs

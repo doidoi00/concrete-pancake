@@ -33,7 +33,7 @@ RUN set -eux; \
 ENV DVISVGM_PDF_PROC=mutool
 
 # PyMuPDF Settings
-ENV VENV_PATH = /opt/pymu
+ENV VENV_PATH /opt/pymu
 
 RUN python3 -m venv "$VENV_PATH" \
  && "$VENV_PATH/bin/pip" install --upgrade pip \

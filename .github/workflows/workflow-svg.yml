@@ -99,6 +99,13 @@ jobs:
 
           def rgbint_to_tuple(c): return ((c>>16)&255, (c>>8)&255, c&255)
 
+          def is_zero(tok: str) -> bool:
+            EPS = 1e-6
+            try:
+                return abs(float(tok)) <= EPS
+            except Exception:
+                return False
+
           def recolor_tokens(tokens):
               edits = 0
               i = 0

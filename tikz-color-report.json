@@ -4,41 +4,47 @@
     "text_black": 13,
     "text_white": 0,
     "draw_black": 9,
-    "draw_white": 0
+    "draw_white": 0,
+    "redactions": 22
   },
   "tikz/6ddcb61ec76f66e5.pdf": {
     "pages": 1,
     "text_black": 8,
     "text_white": 0,
     "draw_black": 4,
-    "draw_white": 0
+    "draw_white": 0,
+    "redactions": 12
   },
   "tikz/41f81c02582b5365.pdf": {
     "pages": 1,
     "text_black": 6,
     "text_white": 0,
     "draw_black": 2,
-    "draw_white": 1
+    "draw_white": 1,
+    "redactions": 8
   },
   "tikz/a57f6533daedd1bb.pdf": {
     "pages": 1,
     "text_black": 28,
     "text_white": 0,
     "draw_black": 9,
-    "draw_white": 0
+    "draw_white": 0,
+    "redactions": 37
   },
   "tikz/dccd1792a681542b.pdf": {
     "pages": 1,
     "text_black": 16,
     "text_white": 0,
     "draw_black": 1,
-    "draw_white": 0
+    "draw_white": 0,
+    "redactions": 17
   },
   "tikz/7ce39899ad9ef596.pdf": {
     "pages": 1,
     "text_black": 14,
     "text_white": 0,
     "draw_black": 1,
-    "draw_white": 0
+    "draw_white": 0,
+    "redactions": 15
   }
 }

@@ -129,15 +129,15 @@ jobs:
                   i += 1
               return edits
 
-            def process_stream(stream: pikepdf.Stream) -> int:
-              # 라틴-1로 디코드/인코드하여 바이트를 보존 (PDF 콘텐츠는 ASCII 계열)
-              src = stream.read_bytes().decode('latin-1')
-              # 간단 토크나이저: 공백 기준 분리. (색상 연산자에는 괄호/대괄호가 관여하지 않음)
-              tokens = src.split()
-              edits = recolor_tokens(tokens)
-              if edits:
-                  stream.write(' '.join(tokens).encode('latin-1'))
-              return edits
+          def process_stream(stream: pikepdf.Stream) -> int:
+            # 라틴-1로 디코드/인코드하여 바이트를 보존 (PDF 콘텐츠는 ASCII 계열)
+            src = stream.read_bytes().decode('latin-1')
+            # 간단 토크나이저: 공백 기준 분리. (색상 연산자에는 괄호/대괄호가 관여하지 않음)
+            tokens = src.split()
+            edits = recolor_tokens(tokens)
+            if edits:
+                stream.write(' '.join(tokens).encode('latin-1'))
+            return edits
 
           stat = {} 
           out = {}

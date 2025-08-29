@@ -91,70 +91,92 @@ jobs:
           echo '--- tikz:svg 직후 ---'
           grep -n "format(" quartz/static/tikz/*.svg || true
       
-      - name: Analyze PDFs with PyMuPDF
+      - name: Recolor PDFs (black→white) without boxes
         run: |
           set -euxo pipefail
           /opt/pymu/bin/python3 - <<'PY'
-          import fitz, json, glob, pathlib
+          import glob, json, pathlib, pikepdf
 
-          def rgbint_to_tuple(c):
-              return ((c >> 16) & 255, (c >> 8) & 255, c & 255)
+          def is_zero(tok: str) -> bool:
+              try:
+                  return abs(float(tok))
+              except Exception:
+                  return False
+
+          def is_one(tok: str) -> bool:
+              try:
+                  return abs(float(tok) - 1.0)
+              except Exception:
+                  return False
+
+          def recolor_tokens(tokens):
+              """토큰 리스트에서 색상 연산자만 교체.
+              - g/G: 그레이스케일 (1개 피연산자)
+              - rg/RG: RGB (3개 피연산자)
+              - k/K: CMYK (4개 피연산자)
+              
+              pure black → white:
+                g/G: 0   → 1
+                rg/RG: 0 0 0 → 1 1 1
+                k/K:  0 0 0 1 → 0 0 0 0 (no ink)
+              """
+              edits = 0
+              i = 0
+              n = len(tokens)
+              while i < n:
+                  op = tokens[i]
+                  # Gray fill/stroke
+                  if op == 'g' and i >= 1 and is_zero(tokens[i-1]):
+                      tokens[i-1] = '1'
+                      edits += 1
+                  elif op == 'G' and i >= 1 and is_zero(tokens[i-1]):
+                      tokens[i-1] = '1'
+                      edits += 1
+                  # RGB fill/stroke
+                  elif op == 'rg' and i >= 3 and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
+                      tokens[i-3], tokens[i-2], tokens[i-1] = '1', '1', '1'
+                      edits += 1
+                  elif op == 'RG' and i >= 3 and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
+                      tokens[i-3], tokens[i-2], tokens[i-1] = '1', '1', '1'
+                      edits += 1
+                  # CMYK fill/stroke
+                  elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_one(tokens[i-1]):
+                      tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1] = '0', '0', '0', '0'
+                      edits += 1
+                  elif op == 'K' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_one(tokens[i-1]):
+                      tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1] = '0', '0', '0', '0'
+                      edits += 1
+                  i += 1
+              return edits
+
+          def process_stream(stream: pikepdf.Stream) -> int:
+              # 라틴-1로 디코드/인코드하여 바이트를 보존 (PDF 콘텐츠는 ASCII 계열)
+              src = stream.read_bytes().decode('latin-1')
+              # 간단 토크나이저: 공백 기준 분리. (색상 연산자에는 괄호/대괄호가 관여하지 않음)
+              tokens = src.split()
+              edits = recolor_tokens(tokens)
+              if edits:
+                  stream.write(' '.join(tokens).encode('latin-1'))
+              return edits
 
           out = {}
-          for pdf in glob.glob("tikz/**/*.pdf", recursive=True):
-              doc = fitz.open(pdf)
-              stats = {
-                  "pages": len(doc),
-                  "text_black": 0,
-                  "text_white": 0,
-                  "draw_black": 0,
-                  "draw_white": 0,
-                  "redactions": 0,
-              }
+          for pdf in glob.glob('tikz/**/*.pdf', recursive=True):
+              edits_total = 0
+              with pikepdf.open(pdf) as doc:
+                  for page in doc.pages:
+                      contents = page.Contents
+                      if isinstance(contents, pikepdf.Stream):
+                          edits_total += process_stream(contents)
+                      elif isinstance(contents, pikepdf.Array):
+                          for s in contents:
+                              if isinstance(s, pikepdf.Stream):
+                                  edits_total += process_stream(s)
+                  out_path = pathlib.Path(pdf).with_suffix('').as_posix() + '-white.pdf'
+                  doc.save(out_path)
+              out[pdf] = {"edits": edits_total}
 
-              for page in doc:
-                  # 1) Drawings (paths, shapes). Colors are floats in [0,1]
-                  for d in page.get_drawings():
-                      col = d.get("color")
-                      fill = d.get("fill")
-                      rect = d.get("rect")
-
-                      if col == (0, 0, 0) or fill == (0, 0, 0):
-                          stats["draw_black"] += 1
-                          if rect is not None:
-                              page.add_redact_annot(fitz.Rect(rect), fill=(1, 1, 1))
-                              stats["redactions"] += 1
-
-                      if col == (1, 1, 1) or fill == (1, 1, 1):
-                          stats["draw_white"] += 1
-
-                  # 2) Text (spans). Colors are 0xRRGGBB integers
-                  td = page.get_text("dict")
-                  for b in td.get("blocks", []):
-                      for l in b.get("lines", []):
-                          for s in l.get("spans", []):
-                              c = s.get("color")
-                              if isinstance(c, int):
-                                  r, g, b = rgbint_to_tuple(c)
-                                  if (r, g, b) == (0, 0, 0):
-                                      stats["text_black"] += 1
-                                      page.add_redact_annot(fitz.Rect(s["bbox"]), fill=(1, 1, 1))
-                                      stats["redactions"] += 1
-                                  elif (r, g, b) == (255, 255, 255):
-                                      stats["text_white"] += 1
-
-                  # Important: actually apply redactions for this page
-                  page.apply_redactions()
-
-              # Save a whitened copy next to the source PDF
-              out[pdf] = stats
-              out_path = pathlib.Path(pdf).with_suffix("").as_posix() + "-white.pdf"
-              doc.save(out_path, garbage=4, deflate=True, clean=True)
-              doc.close()
-
-          # Write JSON report
-          pathlib.Path("tikz-color-report.json").write_text(
-              json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8"
+          pathlib.Path('tikz-color-report.json').write_text(
+              json.dumps(out, ensure_ascii=False, indent=2), encoding='utf-8'
           )
           print(json.dumps(out, ensure_ascii=False, indent=2))
           PY
@@ -167,7 +189,7 @@ jobs:
             base="${pdf%.pdf}"
             gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=pngalpha -r450 \
                -dTextAlphaBits=4 -dGraphicsAlphaBits=4 \
-               -o "${base}.png" "$pdf"
+               -o "${base}.png" "$src"
           done
 
       - name: Inline SVGs

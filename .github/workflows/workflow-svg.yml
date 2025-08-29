@@ -108,7 +108,7 @@ jobs:
                   for d in page.get_drawings():
                       col = d.get("color")
                       fill = d.get("fill")
-                      if col == (0,0,0) or fill == (0,0,0): stats["draw_black"] += 1
+                      if col == (0,0,0) or fill == (0,0,0): stats["draw_black"] += 1, page.add_redact_annot(d["rect"], fill=(1,1,1))
                       if col == (1,1,1) or fill == (1,1,1): stats["draw_white"] += 1
                   # 텍스트 색상 (정수 0xRRGGBB)
                   td = page.get_text("dict")
@@ -118,9 +118,10 @@ jobs:
                               c = s.get("color")
                               if isinstance(c, int):
                                   r,g,b = rgbint_to_tuple(c)
-                                  if (r,g,b) == (0,0,0):   stats["text_black"] += 1
+                                  if (r,g,b) == (0,0,0):   stats["text_black"] += 1, page.add_redact_annot(s["bbox"], fill=(1,1,1))
                                   if (r,g,b) == (255,255,255): stats["text_white"] += 1
               out[pdf] = stats
+              doc.save(doc.name+"-dark", garbage=4, deflate=True, clean=True)
 
           pathlib.Path("tikz-color-report.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
           print(json.dumps(out, ensure_ascii=False, indent=2))

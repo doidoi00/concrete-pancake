@@ -146,7 +146,8 @@ jobs:
           def white_to_transparent_once(tokens):
               edits = 0
               n = len(tokens)
-              painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*', 'Tj', "'", '"', 'TJ', 'sh', 'Do'}
+              painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*'}
+              color_ops = {'g', 'G', 'rg', 'RG', 'k', 'K'}
               armed = False
               i = 0
               new = []
@@ -188,8 +189,15 @@ jobs:
                       arm_alpha0()
 
                   else:
-                      # pass-through
+                      # If armed and we see another color op, disarm by resetting alpha.
+                      if armed and op in color_ops:
+                          new.append('/GSalpha1'); new.append('gs')
+                          armed = False
+
+                      # pass-through original token
                       new.append(op)
+
+                      # If armed and we see a paint op, use the transparency and then disarm.
                       if armed and is_paint_op(op):
                           new.append('/GSalpha1'); new.append('gs')
                           armed = False

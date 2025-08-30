@@ -219,7 +219,6 @@ jobs:
               stats = {"pages": len(doc), "text_black":0, "text_white":0, "draw_black":0, "draw_white":0}
               for page in doc:
                   # 도형/선 색상 (0..1 float RGB)
-                  edits_total = 0
                   for d in page.get_drawings():
                       col = d.get("color")
                       fill = d.get("fill")
@@ -237,7 +236,20 @@ jobs:
                                   if (r,g,b) == (255,255,255): stats["text_white"] += 1
               stat[pdf] = stats
               with pikepdf.open(pdf) as doc:
+                  edits_total = 0
                   for page in doc.pages:
+                      if not page.get('/Resources'):
+                          page.Resources = pikepdf.Dictionary()
+                      if not page.Resources.get('/ExtGState'):
+                          page.Resources.ExtGState = pikepdf.Dictionary()
+                      
+                      page.Resources.ExtGState['/GSalpha0'] = pikepdf.Dictionary(
+                          Type='/ExtGState', ca=0.0
+                      )
+                      page.Resources.ExtGState['/GSalpha1'] = pikepdf.Dictionary(
+                          Type='/ExtGState', ca=1.0
+                      )
+
                       contents = page.Contents
                       if isinstance(contents, pikepdf.Stream):
                           edits_total += process_stream(contents)

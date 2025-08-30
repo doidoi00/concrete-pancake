@@ -146,7 +146,7 @@ jobs:
           def white_to_transparent_once(tokens):
               edits = 0
               n = len(tokens)
-              painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*', 'Tj', "'", '"', 'TJ'}
+              painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*', 'Tj', "'", '"', 'TJ', 'sh', 'Do'}
               armed = False
               i = 0
               new = []

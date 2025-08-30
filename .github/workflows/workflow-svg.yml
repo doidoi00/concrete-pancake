@@ -226,29 +226,6 @@ jobs:
               doc = fitz.open(pdf)
               stats = {"pages": len(doc), "text_black":0, "text_white":0, "draw_black":0, "draw_white":0}
               for page in doc:
-                  # Ensure ExtGState resource for GSalpha0 and GSalpha1
-                  from pikepdf import Name, Dictionary
-                  res = page.get(Name('/Resources'), None)
-                  if res is None:
-                      res = Dictionary()
-                      page[Name('/Resources')] = res
-                  egs = res.get(Name('/ExtGState'), None)
-                  if egs is None:
-                      egs = Dictionary()
-                      res[Name('/ExtGState')] = egs
-                  if Name('/GSalpha0') not in egs:
-                      egs[Name('/GSalpha0')] = doc.make_indirect(Dictionary({
-                          Name('/Type'): Name('/ExtGState'),
-                          Name('/CA'): 0,
-                          Name('/ca'): 0
-                      }))
-                  if Name('/GSalpha1') not in egs:
-                      egs[Name('/GSalpha1')] = doc.make_indirect(Dictionary({
-                          Name('/Type'): Name('/ExtGState'),
-                          Name('/CA'): 1,
-                          Name('/ca'): 1
-                      }))
-
                   # 도형/선 색상 (0..1 float RGB)
                   edits_total = 0
                   for d in page.get_drawings():

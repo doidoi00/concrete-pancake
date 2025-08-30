@@ -236,6 +236,8 @@ jobs:
                                   if (r,g,b) == (0,0,0):   stats["text_black"] += 1
                                   if (r,g,b) == (255,255,255): stats["text_white"] += 1
               stat[pdf] = stats
+              with pikepdf.open(pdf) as doc:
+                  for page in doc.pages:
                       contents = page.Contents
                       if isinstance(contents, pikepdf.Stream):
                           edits_total += process_stream(contents)

@@ -146,7 +146,7 @@ jobs:
           def white_to_transparent_once(tokens):
               edits = 0
               n = len(tokens)
-              painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*'}
+              painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*', 'Tj', "'", '"', 'TJ'}
               armed = False
               i = 0
               new = []
@@ -207,10 +207,10 @@ jobs:
               src = stream.read_bytes().decode('latin-1')
               tokens = src.split()
               edits_wt = white_to_transparent_once(tokens)      # 1) white -> transparent (next paint only)
-
-              if edits_wt:
+              edits_bw = recolor_tokens(tokens)                 # 2) black -> white
+              if edits_wt or edits_bw:
                   stream.write(' '.join(tokens).encode('latin-1'))
-              return edits_wt
+              return edits_wt + edits_bw
 
           stat = {} 
           out = {}

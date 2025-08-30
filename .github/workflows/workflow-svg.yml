@@ -145,57 +145,45 @@ jobs:
 
           def white_to_transparent_once(tokens):
               edits = 0
-              n = len(tokens)
               painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*'}
               armed = False
-              i = 0
               new = []
+              i = 0
+              n = len(tokens)
 
               def is_paint_op(tok: str) -> bool:
                   return tok in painting_ops
 
-              def arm_alpha0():
-                  nonlocal edits, armed
-                  new.append('/GSalpha0'); new.append('gs')
-                  edits += 1
-                  armed = True
-
               while i < n:
-                  op = tokens[i]
-
+                  # Use lookahead to find patterns without advancing i yet
+                  
                   # Gray: white(1)
-                  if op == 'g' and i >= 1 and is_one(tokens[i-1]):
-                      new.extend(tokens[i-1:i+1])  # keep "1 g"
-                      arm_alpha0()
-                  elif op == 'G' and i >= 1 and is_one(tokens[i-1]):
-                      new.extend(tokens[i-1:i+1])  # keep "1 G"
-                      arm_alpha0()
-
+                  if i + 1 < n and tokens[i+1] in ('g', 'G') and is_one(tokens[i]):
+                      new.extend([tokens[i], tokens[i+1]])
+                      new.append('/GSalpha0'); new.append('gs'); edits += 1; armed = True
+                      i += 2
+                      continue
                   # RGB: white(1 1 1)
-                  elif op == 'rg' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
-                      new.extend(tokens[i-3:i+1])  # keep "1 1 1 rg"
-                      arm_alpha0()
-                  elif op == 'RG' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
-                      new.extend(tokens[i-3:i+1])  # keep "1 1 1 RG"
-                      arm_alpha0()
-
+                  elif i + 3 < n and tokens[i+3] in ('rg', 'RG') and is_one(tokens[i]) and is_one(tokens[i+1]) and is_one(tokens[i+2]):
+                      new.extend([tokens[i], tokens[i+1], tokens[i+2], tokens[i+3]])
+                      new.append('/GSalpha0'); new.append('gs'); edits += 1; armed = True
+                      i += 4
+                      continue
                   # CMYK: white(0 0 0 0)
-                  elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      new.extend(tokens[i-4:i+1])  # keep "0 0 0 0 k"
-                      arm_alpha0()
-                  elif op == 'K' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      new.extend(tokens[i-4:i+1])  # keep "0 0 0 0 K"
-                      arm_alpha0()
-
-                  else:
-                      # pass-through
-                      new.append(op)
-                      if armed and is_paint_op(op):
-                          new.append('/GSalpha1'); new.append('gs')
-                          armed = False
-
+                  elif i + 4 < n and tokens[i+4] in ('k', 'K') and is_zero(tokens[i]) and is_zero(tokens[i+1]) and is_zero(tokens[i+2]) and is_zero(tokens[i+3]):
+                      new.extend([tokens[i], tokens[i+1], tokens[i+2], tokens[i+3], tokens[i+4]])
+                      new.append('/GSalpha0'); new.append('gs'); edits += 1; armed = True
+                      i += 5
+                      continue
+                  
+                  # If no pattern matched, process the single token
+                  op = tokens[i]
+                  new.append(op)
+                  if armed and is_paint_op(op):
+                      new.append('/GSalpha1'); new.append('gs')
+                      armed = False
                   i += 1
-
+              
               if armed:
                   new.append('/GSalpha1'); new.append('gs')
 

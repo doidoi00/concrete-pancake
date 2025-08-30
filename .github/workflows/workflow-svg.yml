@@ -99,10 +99,17 @@ jobs:
 
           def rgbint_to_tuple(c): return ((c>>16)&255, (c>>8)&255, c&255)
 
+          EPS = 1e-6
+
           def is_zero(tok: str) -> bool:
-            EPS = 1e-6
             try:
                 return abs(float(tok)) <= EPS
+            except Exception:
+                return False
+          
+          def is_one(tok: str) -> bool:
+            try:
+                return abs(float(tok) - 1.0) <= EPS
             except Exception:
                 return False
 
@@ -112,21 +119,21 @@ jobs:
               n = len(tokens)
               while i < n:
                   op = tokens[i]
-                  # Gray fill/stroke
+                  # Gray fill/stroke: black(0) -> white(1)
                   if op == 'g' and i >= 1 and is_zero(tokens[i-1]):
                       tokens[i-1] = '1'
                       edits += 1
                   elif op == 'G' and i >= 1 and is_zero(tokens[i-1]):
                       tokens[i-1] = '1'
                       edits += 1
-                  # RGB fill/stroke
+                  # RGB fill/stroke: black(0 0 0) -> white(1 1 1)
                   elif op == 'rg' and i >= 3 and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
                       tokens[i-3], tokens[i-2], tokens[i-1] = '1', '1', '1'
                       edits += 1
                   elif op == 'RG' and i >= 3 and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
                       tokens[i-3], tokens[i-2], tokens[i-1] = '1', '1', '1'
                       edits += 1
-                  # CMYK fill/stroke
+                  # CMYK fill/stroke: black(0 0 0 1) -> white(0 0 0 0)
                   elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_one(tokens[i-1]):
                       tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1] = '0', '0', '0', '0'
                       edits += 1
@@ -136,15 +143,74 @@ jobs:
                   i += 1
               return edits
 
+          def white_to_transparent_once(tokens):
+              edits = 0
+              n = len(tokens)
+              painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*'}
+              armed = False
+              i = 0
+              new = []
+
+              def is_paint_op(tok: str) -> bool:
+                  return tok in painting_ops
+
+              def arm_alpha0():
+                  nonlocal edits, armed
+                  new.append('/GSalpha0'); new.append('gs')
+                  edits += 1
+                  armed = True
+
+              while i < n:
+                  op = tokens[i]
+
+                  # Gray: white(1)
+                  if op == 'g' and i >= 1 and is_one(tokens[i-1]):
+                      new.extend(tokens[i-1:i+1])  # keep "1 g"
+                      arm_alpha0()
+                  elif op == 'G' and i >= 1 and is_one(tokens[i-1]):
+                      new.extend(tokens[i-1:i+1])  # keep "1 G"
+                      arm_alpha0()
+
+                  # RGB: white(1 1 1)
+                  elif op == 'rg' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
+                      new.extend(tokens[i-3:i+1])  # keep "1 1 1 rg"
+                      arm_alpha0()
+                  elif op == 'RG' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
+                      new.extend(tokens[i-3:i+1])  # keep "1 1 1 RG"
+                      arm_alpha0()
+
+                  # CMYK: white(0 0 0 0)
+                  elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
+                      new.extend(tokens[i-4:i+1])  # keep "0 0 0 0 k"
+                      arm_alpha0()
+                  elif op == 'K' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
+                      new.extend(tokens[i-4:i+1])  # keep "0 0 0 0 K"
+                      arm_alpha0()
+
+                  else:
+                      # pass-through
+                      new.append(op)
+                      if armed and is_paint_op(op):
+                          new.append('/GSalpha1'); new.append('gs')
+                          armed = False
+
+                  i += 1
+
+              if armed:
+                  new.append('/GSalpha1'); new.append('gs')
+
+              tokens[:] = new
+              return edits
+
           def process_stream(stream: pikepdf.Stream) -> int:
-            # 라틴-1로 디코드/인코드하여 바이트를 보존 (PDF 콘텐츠는 ASCII 계열)
-            src = stream.read_bytes().decode('latin-1')
-            # 간단 토크나이저: 공백 기준 분리. (색상 연산자에는 괄호/대괄호가 관여하지 않음)
-            tokens = src.split()
-            edits = recolor_tokens(tokens)
-            if edits:
-                stream.write(' '.join(tokens).encode('latin-1'))
-            return edits
+              # Decode as latin-1 to preserve raw bytes spacing
+              src = stream.read_bytes().decode('latin-1')
+              tokens = src.split()
+              edits_wt = white_to_transparent_once(tokens)      # 1) white -> transparent (next paint only)
+              edits_bw = recolor_tokens(tokens)                 # 2) black -> white
+              if edits_wt or edits_bw:
+                  stream.write(' '.join(tokens).encode('latin-1'))
+              return edits_wt + edits_bw
 
           stat = {} 
           out = {}

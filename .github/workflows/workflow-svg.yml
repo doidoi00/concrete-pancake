@@ -113,37 +113,7 @@ jobs:
             except Exception:
                 return False
 
-          def recolor_tokens(tokens):
-              edits = 0
-              i = 0
-              n = len(tokens)
-              while i < n:
-                  op = tokens[i]
-                  # Gray fill/stroke: black(0) -> white(1)
-                  if op == 'g' and i >= 1 and is_zero(tokens[i-1]):
-                      tokens[i-1] = '1'
-                      edits += 1
-                  elif op == 'G' and i >= 1 and is_zero(tokens[i-1]):
-                      tokens[i-1] = '1'
-                      edits += 1
-                  # RGB fill/stroke: black(0 0 0) -> white(1 1 1)
-                  elif op == 'rg' and i >= 3 and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      tokens[i-3], tokens[i-2], tokens[i-1] = '1', '1', '1'
-                      edits += 1
-                  elif op == 'RG' and i >= 3 and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      tokens[i-3], tokens[i-2], tokens[i-1] = '1', '1', '1'
-                      edits += 1
-                  # CMYK fill/stroke: black(0 0 0 1) -> white(0 0 0 0)
-                  elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_one(tokens[i-1]):
-                      tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1] = '0', '0', '0', '0'
-                      edits += 1
-                  elif op == 'K' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_one(tokens[i-1]):
-                      tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1] = '0', '0', '0', '0'
-                      edits += 1
-                  i += 1
-              return edits
-
-          def white_to_transparent_once(tokens):
+          def transform_colors(tokens):
               edits = 0
               painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*'}
               armed = False
@@ -155,8 +125,7 @@ jobs:
                   return tok in painting_ops
 
               while i < n:
-                  # Use lookahead to find patterns without advancing i yet
-                  
+                  # --- White-to-Transparent Logic ---
                   # Gray: white(1)
                   if i + 1 < n and tokens[i+1] in ('g', 'G') and is_one(tokens[i]):
                       new.extend([tokens[i], tokens[i+1]])
@@ -175,7 +144,27 @@ jobs:
                       new.append('/GSalpha0'); new.append('gs'); edits += 1; armed = True
                       i += 5
                       continue
-                  
+
+                  # --- Black-to-White Logic ---
+                  # Gray: black(0) -> white(1)
+                  if i + 1 < n and tokens[i+1] in ('g', 'G') and is_zero(tokens[i]):
+                      new.extend(['1', tokens[i+1]])
+                      edits += 1
+                      i += 2
+                      continue
+                  # RGB: black(0 0 0) -> white(1 1 1)
+                  elif i + 3 < n and tokens[i+3] in ('rg', 'RG') and is_zero(tokens[i]) and is_zero(tokens[i+1]) and is_zero(tokens[i+2]):
+                      new.extend(['1', '1', '1', tokens[i+3]])
+                      edits += 1
+                      i += 4
+                      continue
+                  # CMYK: black(0 0 0 1) -> white(0 0 0 0)
+                  elif i + 4 < n and tokens[i+4] in ('k', 'K') and is_zero(tokens[i]) and is_zero(tokens[i+1]) and is_zero(tokens[i+2]) and is_one(tokens[i+3]):
+                      new.extend(['0', '0', '0', '0', tokens[i+4]])
+                      edits += 1
+                      i += 5
+                      continue
+
                   # If no pattern matched, process the single token
                   op = tokens[i]
                   new.append(op)
@@ -194,11 +183,10 @@ jobs:
               # Decode as latin-1 to preserve raw bytes spacing
               src = stream.read_bytes().decode('latin-1')
               tokens = src.split()
-              edits_wt = white_to_transparent_once(tokens)      # 1) white -> transparent (next paint only)
-              edits_bw = recolor_tokens(tokens)                 # 2) black -> white
-              if edits_wt or edits_bw:
+              edits = transform_colors(tokens)
+              if edits > 0:
                   stream.write(' '.join(tokens).encode('latin-1'))
-              return edits_wt + edits_bw
+              return edits
 
           stat = {} 
           out = {}

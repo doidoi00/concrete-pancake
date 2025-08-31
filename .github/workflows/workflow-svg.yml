@@ -166,26 +166,26 @@ jobs:
 
                   # Gray: white(1)
                   if op == 'g' and i >= 1 and is_one(tokens[i-1]):
-                      new.extend(tokens[i-1:i+1])  # keep "1 g"
+                      new.append(op)
                       arm_alpha0()
                   elif op == 'G' and i >= 1 and is_one(tokens[i-1]):
-                      new.extend(tokens[i-1:i+1])  # keep "1 G"
+                      new.append(op)
                       arm_alpha0()
 
                   # RGB: white(1 1 1)
                   elif op == 'rg' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
-                      new.extend(tokens[i-3:i+1])  # keep "1 1 1 rg"
+                      new.append(op)
                       arm_alpha0()
                   elif op == 'RG' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
-                      new.extend(tokens[i-3:i+1])  # keep "1 1 1 RG"
+                      new.append(op)
                       arm_alpha0()
 
                   # CMYK: white(0 0 0 0)
                   elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      new.extend(tokens[i-4:i+1])  # keep "0 0 0 0 k"
+                      new.append(op)
                       arm_alpha0()
                   elif op == 'K' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      new.extend(tokens[i-4:i+1])  # keep "0 0 0 0 K"
+                      new.append(op)
                       arm_alpha0()
 
                   else:

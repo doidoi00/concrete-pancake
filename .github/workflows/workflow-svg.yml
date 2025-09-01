@@ -102,16 +102,16 @@ jobs:
           EPS = 1e-6
 
           def is_zero(tok: str) -> bool:
-            try:
-                return abs(float(tok)) <= EPS
-            except Exception:
-                return False
-          
+              try:
+                  return abs(float(tok)) <= EPS
+              except Exception:
+                  return False
+
           def is_one(tok: str) -> bool:
-            try:
-                return abs(float(tok) - 1.0) <= EPS
-            except Exception:
-                return False
+              try:
+                  return abs(float(tok) - 1.0) <= EPS
+              except Exception:
+                  return False
 
           def recolor_tokens(tokens):
               edits = 0
@@ -146,66 +146,85 @@ jobs:
           def white_to_transparent_once(tokens):
               edits = 0
               n = len(tokens)
-              painting_ops = {'f', 'F', 'S', 's', 'B', 'B*', 'b', 'b*', 'f*'}
-              color_ops = {'g', 'G', 'rg', 'RG', 'k', 'K'}
-              armed = False
+              # 페인팅 연산자들 - 실제로 색상이 적용되는 연산들
+              painting_ops = {
+                  'f', 'F',           # fill (nonzero winding, even-odd)
+                  'S', 's',           # stroke (close path and stroke)
+                  'B', 'B*',          # fill and stroke (nonzero winding, even-odd)
+                  'b', 'b*',          # close, fill and stroke (nonzero winding, even-odd)
+                  'f*',               # fill (even-odd rule)
+                  'n',                # end path (no painting)
+                  'W', 'W*',          # clipping path (nonzero winding, even-odd)
+                  'Tj', 'TJ',         # show text, show text with individual glyph positioning
+                  "'", '"',           # move to next line and show text, set word/char spacing and show text
+                  'Td', 'TD',         # move text position
+                  'Tm', 'T*',         # set text matrix, move to start of next line
+                  'Do',               # invoke named XObject
+                  'sh',               # paint area defined by shading pattern
+                  'EX',               # end inline image
+              }
+              color_ops = {'g', 'G', 'rg', 'RG', 'k', 'K', 'cs', 'CS', 'sc', 'SC', 'scn', 'SCN'}
+              white_pending = False
               i = 0
               new = []
 
               def is_paint_op(tok: str) -> bool:
                   return tok in painting_ops
 
-              def arm_alpha0():
-                  nonlocal edits, armed
-                  new.append('/GSalpha0'); new.append('gs')
-                  edits += 1
-                  armed = True
-
               while i < n:
                   op = tokens[i]
 
                   # Gray: white(1)
                   if op == 'g' and i >= 1 and is_one(tokens[i-1]):
+                      new.append(tokens[i-1])  # 색상 값 추가
                       new.append(op)
-                      arm_alpha0()
+                      white_pending = True
                   elif op == 'G' and i >= 1 and is_one(tokens[i-1]):
+                      new.append(tokens[i-1])  # 색상 값 추가
                       new.append(op)
-                      arm_alpha0()
+                      white_pending = True
 
                   # RGB: white(1 1 1)
                   elif op == 'rg' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
+                      new.extend([tokens[i-3], tokens[i-2], tokens[i-1]])  # 색상 값들 추가
                       new.append(op)
-                      arm_alpha0()
+                      white_pending = True
                   elif op == 'RG' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
+                      new.extend([tokens[i-3], tokens[i-2], tokens[i-1]])  # 색상 값들 추가
                       new.append(op)
-                      arm_alpha0()
+                      white_pending = True
 
                   # CMYK: white(0 0 0 0)
                   elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
+                      new.extend([tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1]])  # 색상 값들 추가
                       new.append(op)
-                      arm_alpha0()
+                      white_pending = True
                   elif op == 'K' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
+                      new.extend([tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1]])  # 색상 값들 추가
                       new.append(op)
-                      arm_alpha0()
+                      white_pending = True
+
+                  # 페인팅 연산자를 만났을 때 투명도 적용
+                  elif is_paint_op(op):
+                      if white_pending:
+                          new.extend(['/GSalpha0', 'gs'])  # 투명도 적용
+                          new.append(op)
+                          new.extend(['/GSalpha1', 'gs'])  # 투명도 복원
+                          white_pending = False
+                          edits += 1
+                      else:
+                          new.append(op)
+
+                  # 다른 색상 연산자를 만나면 white_pending 해제
+                  elif op in color_ops:
+                      new.append(op)
+                      white_pending = False
 
                   else:
-                      # If armed and we see another color op, disarm by resetting alpha.
-                      if armed and op in color_ops:
-                          new.append('/GSalpha1'); new.append('gs')
-                          armed = False
-
-                      # pass-through original token
+                      # 일반 토큰들 그대로 통과
                       new.append(op)
 
-                      # If armed and we see a paint op, use the transparency and then disarm.
-                      if armed and is_paint_op(op):
-                          new.append('/GSalpha1'); new.append('gs')
-                          armed = False
-
                   i += 1
-
-              if armed:
-                  new.append('/GSalpha1'); new.append('gs')
 
               tokens[:] = new
               return edits
@@ -214,10 +233,11 @@ jobs:
               # Decode as latin-1 to preserve raw bytes spacing
               src = stream.read_bytes().decode('latin-1')
               tokens = src.split()
-              edits_wt = white_to_transparent_once(tokens)      # 1) white -> transparent (next paint only)                # 2) black -> white
-              if edits_wt:
+              edits_wt = white_to_transparent_once(tokens)  # 1) white -> transparent (next paint only) 
+              edits_bw = recolor_tokens(tokens)             # 2) black -> white
+              if edits_wt or edits_bw:
                   stream.write(' '.join(tokens).encode('latin-1'))
-              return edits_wt
+              return edits_wt + edits_bw
 
           stat = {} 
           out = {}

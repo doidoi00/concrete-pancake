@@ -176,31 +176,25 @@ jobs:
 
                   # Gray: white(1)
                   if op == 'g' and i >= 1 and is_one(tokens[i-1]):
-                      new.append(tokens[i-1])  # 색상 값 추가
                       new.append(op)
                       white_pending = True
                   elif op == 'G' and i >= 1 and is_one(tokens[i-1]):
-                      new.append(tokens[i-1])  # 색상 값 추가
                       new.append(op)
                       white_pending = True
 
                   # RGB: white(1 1 1)
                   elif op == 'rg' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
-                      new.extend([tokens[i-3], tokens[i-2], tokens[i-1]])  # 색상 값들 추가
                       new.append(op)
                       white_pending = True
                   elif op == 'RG' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
-                      new.extend([tokens[i-3], tokens[i-2], tokens[i-1]])  # 색상 값들 추가
                       new.append(op)
                       white_pending = True
 
                   # CMYK: white(0 0 0 0)
                   elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      new.extend([tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1]])  # 색상 값들 추가
                       new.append(op)
                       white_pending = True
                   elif op == 'K' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      new.extend([tokens[i-4], tokens[i-3], tokens[i-2], tokens[i-1]])  # 색상 값들 추가
                       new.append(op)
                       white_pending = True
 

@@ -233,10 +233,11 @@ jobs:
               # Decode as latin-1 to preserve raw bytes spacing
               src = stream.read_bytes().decode('latin-1')
               tokens = src.split()
-              edits_wt = white_to_transparent_once(tokens)      # 1) white -> transparent (next paint only)                # 2) black -> white
-              if edits_wt:
+              edits_wt = white_to_transparent_once(tokens)  # 1) white -> transparent (next paint only) 
+              edits_bw = recolor_tokens(tokens)             # 2) black -> white
+              if edits_wt or edits_bw:
                   stream.write(' '.join(tokens).encode('latin-1'))
-              return edits_wt
+              return edits_wt + edits_bw
 
           stat = {} 
           out = {}

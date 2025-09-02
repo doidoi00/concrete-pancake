@@ -95,7 +95,7 @@ jobs:
         run: |
           set -euxo pipefail
           /opt/pymu/bin/python3 - <<'PY'
-          import fitz, json, glob, pathlib, pikepdf
+          import fitz, json, glob, pathlib, pikepdf, io
 
           def apply_stroke_style(sh, d):
               dash = d.get("dashes")
@@ -130,6 +130,12 @@ jobs:
           def is_zero(tok: str) -> bool:
               try:
                   return abs(float(tok)) <= EPS
+              except Exception:
+                  return False
+
+          def is_one(tok: str) -> bool:
+              try:
+                  return abs(float(tok) - 1.0) <= EPS
               except Exception:
                   return False
 
@@ -169,7 +175,16 @@ jobs:
                   i += 1
               return edits
 
-          def white_fill_to_transparent (input: str, output: str | None = None):
+          def bw_process_stream(stream: pikepdf.Stream) -> int:
+              # Decode as latin-1 to preserve raw bytes spacing
+              src = stream.read_bytes().decode('latin-1')
+              tokens = src.split()
+              edits = recolor_tokens(tokens)
+              if edits:
+                  stream.write(' '.join(tokens).encode('latin-1'))
+              return edits
+
+          def white_fill_to_transparent (input: str) -> tuple[bytes, int]:
               doc = fitz.open(input)
               total_edits = 0
 
@@ -230,20 +245,41 @@ jobs:
                   if to_delete:
                       page.delete_drawings(to_delete)
 
-              if output is None:
-                  output = pathlib.Path(input).with_suffix('').as_posix() + '-dark.pdf'
-              doc.save(output, deflate=True)
-              return total_edits
+              # Do NOT save to disk here — return bytes to be post-processed by pikepdf
+              pdf_bytes = doc.tobytes(deflate=True)
+              doc.close()
+              return pdf_bytes, total_edits
 
+          def run_white_and_bw(input_path: str, output_path: str | None = None) -> dict:
+              """
+              Pipeline:
+              1) PyMuPDF: make white path fills transparent (returns bytes, edits_w)
+              2) PikePDF: recolor tokens in content streams (returns edits_bw)
+              3) Save once at the end (only if there were any edits)
+              """
+              pdf_bytes, edits_w = white_fill_to_transparent(input_path)
+              edits_bw = 0
 
-          def bw_process_stream(stream: pikepdf.Stream) -> int:
-              # Decode as latin-1 to preserve raw bytes spacing
-              src = stream.read_bytes().decode('latin-1')
-              tokens = src.split()
-              edits = recolor_tokens(tokens)
-              if edits:
-                  stream.write(' '.join(tokens).encode('latin-1'))
-              return edits
+              with pikepdf.open(io.BytesIO(pdf_bytes)) as doc:
+                  for page in doc.pages:
+                      contents = page.Contents
+                      if not contents:
+                          continue
+                      if isinstance(contents, pikepdf.Stream):
+                          edits_bw += bw_process_stream(contents)
+                      elif isinstance(contents, pikepdf.Array):
+                          for s in contents:
+                              if isinstance(s, pikepdf.Stream):
+                                  edits_bw += bw_process_stream(s)
+
+                  if output_path is None:
+                      p = pathlib.Path(input_path)
+                      output_path = p.with_name(p.stem + '-dark' + p.suffix).as_posix()
+
+                  if edits_w or edits_bw:
+                      doc.save(output_path)
+
+              return {"white_to_transparent": edits_w, "bw_token_edits": edits_bw, "output": output_path}
 
           stat = {} 
           out = {}
@@ -266,6 +302,10 @@ jobs:
                                   r,g,b = rgbint_to_tuple(c)
                                   if (r,g,b) == (0,0,0):   stats["text_black"] += 1
               stat[pdf] = stats
+              doc.close()
+
+              result = run_white_and_bw(pdf)
+              out[pdf] = result
 
           pathlib.Path("tikz-color-report.json").write_text(json.dumps(stat, ensure_ascii=False, indent=2), encoding="utf-8")
           print(json.dumps(stat, ensure_ascii=False, indent=2))

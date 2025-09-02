@@ -190,7 +190,6 @@ jobs:
 
               for page in doc:
                   drawings = page.get_drawings()
-                  to_delete = []
 
                   for d in drawings:
                       fill = d.get("fill")
@@ -232,18 +231,13 @@ jobs:
 
                       # Keep original fill color value, but make it fully transparent
                       sh.finish(
-                          fill=fill,
-                          fill_opacity=0.0,
+                          fill="none",
                           color=stroke_color,
                           width=width,
                           even_odd=even_odd,
                       )
                       sh.commit()
-                      to_delete.append(d)
                       total_edits += 1
-
-                  if to_delete:
-                      page.delete_drawings(to_delete)
 
               # Do NOT save to disk here — return bytes to be post-processed by pikepdf
               pdf_bytes = doc.tobytes(deflate=True)

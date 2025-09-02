@@ -231,7 +231,7 @@ jobs:
 
                       # Keep original fill color value, but make it fully transparent
                       sh.finish(
-                          fill="none",
+                          fill=None,
                           color=stroke_color,
                           width=width,
                           even_odd=even_odd,

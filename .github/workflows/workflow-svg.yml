@@ -97,6 +97,32 @@ jobs:
           /opt/pymu/bin/python3 - <<'PY'
           import fitz, json, glob, pathlib, pikepdf
 
+          def apply_stroke_style(sh, d):
+              dash = d.get("dashes")
+              line_cap = d.get("lineCap")
+              line_join = d.get("lineJoin")
+              miter = d.get("miterLimit")
+              if dash:
+                  try:
+                      sh.set_dash(dash[0], dash[1])
+                  except Exception:
+                      pass
+              if line_cap is not None:
+                  try:
+                      sh.set_line_cap(line_cap)
+                  except Exception:
+                      pass
+              if line_join is not None:
+                  try:
+                      sh.set_line_join(line_join)
+                  except Exception:
+                      pass
+              if miter is not None:
+                  try:
+                      sh.set_miter_limit(miter)
+                  except Exception:
+                      pass
+
           def rgbint_to_tuple(c): return ((c>>16)&255, (c>>8)&255, c&255)
 
           EPS = 1e-6
@@ -107,11 +133,11 @@ jobs:
               except Exception:
                   return False
 
-          def is_one(tok: str) -> bool:
-              try:
-                  return abs(float(tok) - 1.0) <= EPS
-              except Exception:
+          def is_white(rgb):
+              if rgb is None:
                   return False
+              r, g, b = rgb
+              return abs(r-1.0) < EPS and abs(g-1.0) < EPS and abs(b-1.0) < EPS
 
           def recolor_tokens(tokens):
               edits = 0
@@ -143,95 +169,81 @@ jobs:
                   i += 1
               return edits
 
-          def white_to_transparent_once(tokens):
-              edits = 0
-              n = len(tokens)
-              # 페인팅 연산자들 - 실제로 색상이 적용되는 연산들
-              painting_ops = {
-                  'f', 'F',           # fill (nonzero winding, even-odd)
-                  'S', 's',           # stroke (close path and stroke)
-                  'B', 'B*',          # fill and stroke (nonzero winding, even-odd)
-                  'b', 'b*',          # close, fill and stroke (nonzero winding, even-odd)
-                  'f*',               # fill (even-odd rule)
-                  'n',                # end path (no painting)
-                  'W', 'W*',          # clipping path (nonzero winding, even-odd)
-                  'Tj', 'TJ',         # show text, show text with individual glyph positioning
-                  "'", '"',           # move to next line and show text, set word/char spacing and show text
-                  'Td', 'TD',         # move text position
-                  'Tm', 'T*',         # set text matrix, move to start of next line
-                  'Do',               # invoke named XObject
-                  'sh',               # paint area defined by shading pattern
-                  'EX',               # end inline image
-              }
-              color_ops = {'g', 'G', 'rg', 'RG', 'k', 'K', 'cs', 'CS', 'sc', 'SC', 'scn', 'SCN'}
-              white_pending = False
-              i = 0
-              new = []
+          def white_fill_to_transparent (input: str, output: str | None = None):
+              doc = fitz.open(input)
+              total_edits = 0
 
-              def is_paint_op(tok: str) -> bool:
-                  return tok in painting_ops
+              for page in doc:
+                  drawings = page.get_drawings()
+                  to_delete = []
 
-              while i < n:
-                  op = tokens[i]
+                  for d in drawings:
+                      fill = d.get("fill")
+                      if not is_white(fill):
+                          continue
 
-                  # Gray: white(1)
-                  if op == 'g' and i >= 1 and is_one(tokens[i-1]):
-                      new.append(op)
-                      white_pending = True
-                  elif op == 'G' and i >= 1 and is_one(tokens[i-1]):
-                      new.append(op)
-                      white_pending = True
+                      sh = page.new_shape()
 
-                  # RGB: white(1 1 1)
-                  elif op == 'rg' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
-                      new.append(op)
-                      white_pending = True
-                  elif op == 'RG' and i >= 3 and is_one(tokens[i-3]) and is_one(tokens[i-2]) and is_one(tokens[i-1]):
-                      new.append(op)
-                      white_pending = True
+                      # Rebuild the path geometry from items (generic path support)
+                      items = d.get("items") or []
+                      for it in items:
+                          if not it:
+                              continue
+                          op = it[0]
+                          # Commands observed from PyMuPDF: 'm' move, 'l' line, 'c' curve, 're' rect, 'h' close
+                          if op == "m":
+                              pt = it[1]
+                              sh.move_to(pt)
+                          elif op == "l":
+                              pt = it[1]
+                              sh.line_to(pt)
+                          elif op == "c":
+                              p1, p2, p3 = it[1], it[2], it[3]
+                              sh.curve_to(p1, p2, p3)
+                          elif op == "re":
+                              # rectangle shorthand
+                              r = fitz.Rect(it[1])
+                              sh.draw_rect(r)
+                          elif op in ("h", "z"):
+                              sh.close_path()
+                          else:
+                              # ignore graphics state ops like 'q','Q','cm','n' etc.
+                              pass
 
-                  # CMYK: white(0 0 0 0)
-                  elif op == 'k' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      new.append(op)
-                      white_pending = True
-                  elif op == 'K' and i >= 4 and is_zero(tokens[i-4]) and is_zero(tokens[i-3]) and is_zero(tokens[i-2]) and is_zero(tokens[i-1]):
-                      new.append(op)
-                      white_pending = True
+                      apply_stroke_style(sh, d)
+                      stroke_color = d.get("color", (0, 0, 0))
+                      width = d.get("width", 1.0)
+                      even_odd = bool(d.get("even_odd", False))
 
-                  # 페인팅 연산자를 만났을 때 투명도 적용
-                  elif is_paint_op(op):
-                      if white_pending:
-                          new.extend(['/GSalpha0', 'gs'])  # 투명도 적용
-                          new.append(op)
-                          new.extend(['/GSalpha1', 'gs'])  # 투명도 복원
-                          white_pending = False
-                          edits += 1
-                      else:
-                          new.append(op)
+                      # Keep original fill color value, but make it fully transparent
+                      sh.finish(
+                          fill=fill,
+                          fill_opacity=0.0,
+                          color=stroke_color,
+                          width=width,
+                          even_odd=even_odd,
+                      )
+                      sh.commit()
+                      to_delete.append(d)
+                      total_edits += 1
 
-                  # 다른 색상 연산자를 만나면 white_pending 해제
-                  elif op in color_ops:
-                      new.append(op)
-                      white_pending = False
+                  if to_delete:
+                      page.delete_drawings(to_delete)
 
-                  else:
-                      # 일반 토큰들 그대로 통과
-                      new.append(op)
+              if output is None:
+                  output = pathlib.Path(input).with_suffix('').as_posix() + '-dark.pdf'
+              doc.save(output, deflate=True)
+              return total_edits
 
-                  i += 1
 
-              tokens[:] = new
-              return edits
-
-          def process_stream(stream: pikepdf.Stream) -> int:
+          def bw_process_stream(stream: pikepdf.Stream) -> int:
               # Decode as latin-1 to preserve raw bytes spacing
               src = stream.read_bytes().decode('latin-1')
               tokens = src.split()
-              edits_wt = white_to_transparent_once(tokens)  # 1) white -> transparent (next paint only) 
-              edits_bw = recolor_tokens(tokens)             # 2) black -> white
-              if edits_wt or edits_bw:
+              edits = recolor_tokens(tokens)
+              if edits:
                   stream.write(' '.join(tokens).encode('latin-1'))
-              return edits_wt + edits_bw
+              return edits
 
           stat = {} 
           out = {}
@@ -244,7 +256,6 @@ jobs:
                       col = d.get("color")
                       fill = d.get("fill")
                       if col == (0,0,0) or fill == (0,0,0): stats["draw_black"] += 1
-                      if col == (1,1,1) or fill == (1,1,1): stats["draw_white"] += 1
                   # 텍스트 색상 (정수 0xRRGGBB)
                   td = page.get_text("dict")
                   for b in td.get("blocks", []):
@@ -254,33 +265,7 @@ jobs:
                               if isinstance(c, int):
                                   r,g,b = rgbint_to_tuple(c)
                                   if (r,g,b) == (0,0,0):   stats["text_black"] += 1
-                                  if (r,g,b) == (255,255,255): stats["text_white"] += 1
               stat[pdf] = stats
-              with pikepdf.open(pdf) as doc:
-                  edits_total = 0
-                  for page in doc.pages:
-                      if not page.get('/Resources'):
-                          page.Resources = pikepdf.Dictionary()
-                      if not page.Resources.get('/ExtGState'):
-                          page.Resources.ExtGState = pikepdf.Dictionary()
-                      
-                      page.Resources.ExtGState['/GSalpha0'] = pikepdf.Dictionary(
-                          Type='/ExtGState', ca=0.0
-                      )
-                      page.Resources.ExtGState['/GSalpha1'] = pikepdf.Dictionary(
-                          Type='/ExtGState', ca=1.0
-                      )
-
-                      contents = page.Contents
-                      if isinstance(contents, pikepdf.Stream):
-                          edits_total += process_stream(contents)
-                      elif isinstance(contents, pikepdf.Array):
-                          for s in contents:
-                              if isinstance(s, pikepdf.Stream):
-                                  edits_total += process_stream(s)
-                  out_path = pathlib.Path(pdf).with_suffix('').as_posix() + '-dark.pdf'
-                  doc.save(out_path)
-              out[pdf] = {"edits": edits_total}
 
           pathlib.Path("tikz-color-report.json").write_text(json.dumps(stat, ensure_ascii=False, indent=2), encoding="utf-8")
           print(json.dumps(stat, ensure_ascii=False, indent=2))

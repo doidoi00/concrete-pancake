@@ -84,12 +84,6 @@ jobs:
           mkdir -p quartz/static/tikz
           node quartz/util/tikz-extract.mjs
           npm run tikz:pdf:tectonic
-          npm run tikz:svg
-
-      - name: format() after tikz:svg
-        run: |
-          echo '--- tikz:svg 직후 ---'
-          grep -n "format(" quartz/static/tikz/*.svg || true
 
       - name: Analyze PDFs with PyMuPDF & Edits Black/White
         run: |

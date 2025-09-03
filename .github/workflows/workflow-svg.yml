@@ -231,6 +231,7 @@ jobs:
       - name: PDFs → PNGs (transparent)
         run: |
           set -euxo pipefail
+          mkdir -p quartz/static/tikz
           find tikz -type f -name '*.pdf' -print0 | \
             while IFS= read -r -d '' pdf; do
             base="${pdf%.pdf}"

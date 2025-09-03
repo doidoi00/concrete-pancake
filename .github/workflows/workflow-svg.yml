@@ -237,7 +237,7 @@ jobs:
             base="${pdf%.pdf}"
             gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=pngalpha -r450 \
                -dTextAlphaBits=4 -dGraphicsAlphaBits=4 \
-               -o "quartz/static/tikz/${base}.png" "$pdf"
+               -o "quartz/static/${base}.png" "$pdf"
           done
 
       - name: Checkout publish branch

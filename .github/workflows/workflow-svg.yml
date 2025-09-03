@@ -239,14 +239,6 @@ jobs:
                -o "${base}.png" "$pdf"
           done
 
-      - name: Inline SVGs
-        run: node quartz/util/svg-inline.mjs
-
-      - name: format() after post script
-        run: |
-          echo '--- post script 직후 ---'
-          grep -n "format(" quartz/static/tikz/*.svg || true
-
       - name: Checkout publish branch
         uses: actions/checkout@v5
         with:

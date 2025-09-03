@@ -6,6 +6,7 @@ export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
   afterBody: [
+    Component.TikzDarkmode(),
     Component.Comments({
       provider: 'giscus',
       options: {

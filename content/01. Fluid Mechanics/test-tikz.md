@@ -1,1 +1,1 @@
-<img class="tikzjax-png" src="/static/tikz/a57f6533daedd1bb.png" data-light-src="/static/tikz/a57f6533daedd1bb.png" data-dark-src="/static/tikz/a57f6533daedd1bb-dark.png" id="png-a57f6533daedd1bb" alt="tikz">
+<img class="tikzjax-png" src="/static/tikz/a57f6533daedd1bb.png" data-light-src="/static/tikz/a57f6533daedd1bb.png" data-dark-src="/static/tikz/a57f6533daedd1bb-dark.png" id="png-a57f6533daedd1bb" alt="tikz" width="50%">

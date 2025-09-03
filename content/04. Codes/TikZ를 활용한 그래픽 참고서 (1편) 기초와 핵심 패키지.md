@@ -495,7 +495,7 @@ TikZ의 레이어 시스템은 요소들이 수동적인 Z-순서 지정 없이 
 >\end{tikzpicture}
 >```
 
-<img class="tikzjax-png" src="/static/tikz/dccd1792a681542b.png" data-light-src="/static/tikz/dccd1792a681542b.png" data-dark-src="/static/tikz/dccd1792a681542b-dark.png" id="png-dccd1792a681542b" alt="tikz">
+<img class="tikzjax-png" src="/static/tikz/dccd1792a681542b.png" data-light-src="/static/tikz/dccd1792a681542b.png" data-dark-src="/static/tikz/dccd1792a681542b-dark.png" id="png-dccd1792a681542b" alt="tikz" width="50%">
 
 - **화살표 플롯 (`quiver`)**: `u`, `v`, `w` 구성 요소를 사용하여 벡터 필드를 나타내는 작은 화살표를 그립니다.
 
@@ -508,7 +508,7 @@ TikZ의 레이어 시스템은 요소들이 수동적인 Z-순서 지정 없이 
 >\end{tikzpicture}
 >```
 
-<img class="tikzjax-png" src="/static/tikz/7ce39899ad9ef596.png" data-light-src="/static/tikz/7ce39899ad9ef596.png" data-dark-src="/static/tikz/7ce39899ad9ef596-dark.png" id="png-7ce39899ad9ef596" alt="tikz">
+<img class="tikzjax-png" src="/static/tikz/7ce39899ad9ef596.png" data-light-src="/static/tikz/7ce39899ad9ef596.png" data-dark-src="/static/tikz/7ce39899ad9ef596-dark.png" id="png-7ce39899ad9ef596" alt="tikz" width="50%">
 
 축, 레이블 및 범례는 플롯의 가독성을 높이는 데 중요합니다. `axis lines`는 축의 위치를 설정하고, `xlabel`, `ylabel`은 축에 레이블을 추가하며, `title`은 그림에 제목을 할당합니다. `xmin/xmax/ymin/ymax`는 축의 최소/최대 경계를 설정하고, `xtick/ytick`은 눈금 위치를 정의하며, `legend pos`는 범례 상자의 위치를 지정합니다. `ymajorgrids` 및 `grid style`은 그리드 선을 활성화하고 스타일을 지정하며, `\addlegendentry`는 플롯된 함수에 대한 범례 항목을 추가합니다.
 
@@ -539,7 +539,7 @@ TikZ의 레이어 시스템은 요소들이 수동적인 Z-순서 지정 없이 
 >\end{tikzpicture}
 >```
 
-<img class="tikzjax-png" src="/static/tikz/41f81c02582b5365.png" data-light-src="/static/tikz/41f81c02582b5365.png" data-dark-src="/static/tikz/41f81c02582b5365-dark.png" id="png-41f81c02582b5365" alt="tikz">
+<img class="tikzjax-png" src="/static/tikz/41f81c02582b5365.png" data-light-src="/static/tikz/41f81c02582b5365.png" data-dark-src="/static/tikz/41f81c02582b5365-dark.png" id="png-41f81c02582b5365" alt="tikz" width="50%">
 
 - **표면 플롯 (`surf`)**: 메시 플롯과 유사하며, 종종 명시적인 색상 매핑을 사용합니다.
 
@@ -559,7 +559,7 @@ TikZ의 레이어 시스템은 요소들이 수동적인 Z-순서 지정 없이 
 >\end{tikzpicture}
 > ```
 
-<img class="tikzjax-png" src="/static/tikz/75e65a94efacd282.png" data-light-src="/static/tikz/75e65a94efacd282.png" data-dark-src="/static/tikz/75e65a94efacd282-dark.png" id="png-75e65a94efacd282" alt="tikz">
+<img class="tikzjax-png" src="/static/tikz/75e65a94efacd282.png" data-light-src="/static/tikz/75e65a94efacd282.png" data-dark-src="/static/tikz/75e65a94efacd282-dark.png" id="png-75e65a94efacd282" alt="tikz" width="50%">
 
 - **등고선 플롯 (`contour gnuplot`)**: 등고선을 생성하며, 종종 `gnuplot`과 같은 외부 프로그램의 사전 계산이 필요합니다. `view={0}{90}`은 위에서 본 시점을 설정합니다. 
 

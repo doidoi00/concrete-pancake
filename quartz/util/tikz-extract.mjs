@@ -79,7 +79,7 @@ for (const file of mdFiles) {
       replacement: (() => {
         const alt = meta.alt || meta.title || 'tikz'
         const cls = meta.class ? `tikzjax-png ${meta.class}` : 'tikzjax-png'
-        return `<img class="${cls}" src="/static/tikz/${hash}.png" data-light-src="/static/tikz/${hash}.png" data-dark-src="/static/tikz/${hash}-dark.png" id="png-${hash}" alt="${alt}">`
+        return `<img class="${cls}" src="/static/tikz/${hash}.png" data-light-src="/static/tikz/${hash}.png" data-dark-src="/static/tikz/${hash}-dark.png" id="png-${hash}" alt="${alt}" width="50%">`
       })(),
       texPath,
       texContent,

@@ -7199,15 +7199,6 @@ body {
     mask-image: var(--moon-icon);
     -webkit-mask-image: var(--moon-icon);
   }
-  svg.tikzjax-svg path[stroke="#000"]{
-    stroke: #fff !important;
-  }
-  svg.tikzjax-svg path[stroke="#fff"]{
-    stroke: #000 !important;
-  }
-  svg.tikzjax-svg path[fill="#fff"]{
-    opacity: 0 !important;
-  }
 }
 :root:root:root {
   font-family: var(--font-default) !important;

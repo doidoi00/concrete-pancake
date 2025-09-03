@@ -78,8 +78,8 @@ for (const file of mdFiles) {
       // Build HTML <img> so we can attach a class (Markdown image syntax has no class support)
       replacement: (() => {
         const alt = meta.alt || meta.title || 'tikz'
-        const cls = meta.class ? `tikzjax-svg ${meta.class}` : 'tikzjax-svg'
-        return `<img class="${cls}" src="/static/tikz/${hash}.svg" id="svg-${hash}" alt="${alt}">`
+        const cls = meta.class ? `tikzjax-png ${meta.class}` : 'tikzjax-png'
+        return `<img class="${cls}" src="/static/tikz/${hash}.png" data-light-src="/static/tikz/${hash}.png" data-dark-src="/static/tikz/${hash}-dark.png" id="png-${hash}" alt="${alt}">`
       })(),
       texPath,
       texContent,

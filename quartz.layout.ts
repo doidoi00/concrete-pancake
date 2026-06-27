@@ -11,7 +11,7 @@ export const sharedPageComponents: SharedLayout = {
       provider: 'giscus',
       options: {
         // data-repo
-        repo: 'doidoi00/concrete-pancake',
+        repo: 'mossyantler/concrete-pancake',
         // data-repo-id
         repoId: 'R_kgDOPWBFzQ',
         // data-category
@@ -25,7 +25,7 @@ export const sharedPageComponents: SharedLayout = {
   ],
   footer: Component.Footer({
     links: {
-      GitHub: "https://github.com/doidoi00/concrete-pancake",
+      GitHub: "https://github.com/mossyantler/concrete-pancake",
       "Discord Community": "https://discord.gg/cRFFHYye7t",
     },
   }),

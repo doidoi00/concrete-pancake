@@ -1,54 +1,12 @@
 {
-  "tikz/41f81c02582b5365.pdf": {
-    "pages": 1,
-    "text_black": 6,
-    "text_white": 0,
-    "draw_black": 2,
-    "draw_white": 0
-  },
-  "tikz/75e65a94efacd282-dark.pdf": {
+  "tikz/a57f6533daedd1bb-dark.pdf": {
     "pages": 1,
     "text_black": 0,
     "text_white": 0,
     "draw_black": 0,
-    "draw_white": 0
-  },
-  "tikz/6ddcb61ec76f66e5-dark.pdf": {
-    "pages": 1,
-    "text_black": 0,
-    "text_white": 0,
-    "draw_black": 0,
-    "draw_white": 0
-  },
-  "tikz/dccd1792a681542b.pdf": {
-    "pages": 1,
-    "text_black": 16,
-    "text_white": 0,
-    "draw_black": 1,
-    "draw_white": 0
-  },
-  "tikz/a57f6533daedd1bb.pdf": {
-    "pages": 1,
-    "text_black": 28,
-    "text_white": 0,
-    "draw_black": 9,
     "draw_white": 0
   },
   "tikz/41f81c02582b5365-dark.pdf": {
-    "pages": 1,
-    "text_black": 0,
-    "text_white": 0,
-    "draw_black": 0,
-    "draw_white": 0
-  },
-  "tikz/6ddcb61ec76f66e5.pdf": {
-    "pages": 1,
-    "text_black": 8,
-    "text_white": 0,
-    "draw_black": 4,
-    "draw_white": 0
-  },
-  "tikz/dccd1792a681542b-dark.pdf": {
     "pages": 1,
     "text_black": 0,
     "text_white": 0,
@@ -62,11 +20,39 @@
     "draw_black": 0,
     "draw_white": 0
   },
-  "tikz/7ce39899ad9ef596.pdf": {
+  "tikz/dccd1792a681542b-dark.pdf": {
     "pages": 1,
-    "text_black": 14,
+    "text_black": 0,
     "text_white": 0,
-    "draw_black": 1,
+    "draw_black": 0,
+    "draw_white": 0
+  },
+  "tikz/6ddcb61ec76f66e5-dark.pdf": {
+    "pages": 1,
+    "text_black": 0,
+    "text_white": 0,
+    "draw_black": 0,
+    "draw_white": 0
+  },
+  "tikz/41f81c02582b5365.pdf": {
+    "pages": 1,
+    "text_black": 6,
+    "text_white": 0,
+    "draw_black": 2,
+    "draw_white": 0
+  },
+  "tikz/6ddcb61ec76f66e5.pdf": {
+    "pages": 1,
+    "text_black": 8,
+    "text_white": 0,
+    "draw_black": 4,
+    "draw_white": 0
+  },
+  "tikz/75e65a94efacd282-dark.pdf": {
+    "pages": 1,
+    "text_black": 0,
+    "text_white": 0,
+    "draw_black": 0,
     "draw_white": 0
   },
   "tikz/75e65a94efacd282.pdf": {
@@ -76,11 +62,25 @@
     "draw_black": 9,
     "draw_white": 0
   },
-  "tikz/a57f6533daedd1bb-dark.pdf": {
+  "tikz/a57f6533daedd1bb.pdf": {
     "pages": 1,
-    "text_black": 0,
+    "text_black": 28,
     "text_white": 0,
-    "draw_black": 0,
+    "draw_black": 9,
+    "draw_white": 0
+  },
+  "tikz/7ce39899ad9ef596.pdf": {
+    "pages": 1,
+    "text_black": 14,
+    "text_white": 0,
+    "draw_black": 1,
+    "draw_white": 0
+  },
+  "tikz/dccd1792a681542b.pdf": {
+    "pages": 1,
+    "text_black": 16,
+    "text_white": 0,
+    "draw_black": 1,
     "draw_white": 0
   }
 }

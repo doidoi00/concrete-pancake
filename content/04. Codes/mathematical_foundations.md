@@ -98,7 +98,7 @@ $$C_{i,j} = u_{i,j} \frac{\partial \omega}{\partial x} + v_{i,j} \frac{\partial 
 
 ### 2.4 `solve_vorticity_adi()`
 
-**Purpose:** Solve vorticity transport equation using explicit method
+**Purpose:** The equations below describe an explicit update of the vorticity transport equation. If the implementation is genuinely ADI, this section must instead document its two implicit directional solves; otherwise the function should be renamed to match the explicit method.
 
 **Mathematical Foundation:**
 The vorticity transport equation is discretized as:
@@ -143,7 +143,7 @@ $$v_{i,j} = -\frac{\partial \psi}{\partial x} = -\frac{\psi_{i+1,j} - \psi_{i-1,
 
 ## 3. Numerical Method Classification
 
-### Method Type: **Fractional Step Method with Vorticity-Streamfunction Formulation**
+### Method Type: **Explicit Vorticity-Streamfunction Method with SOR Poisson Solver**
 
 **Algorithm Structure:**
 1. **Step 1:** Update vorticity using transport equation (explicit)
@@ -172,7 +172,7 @@ $$C_{diff} = \frac{\Delta t}{Re \cdot h^2} \leq \frac{1}{4}$$
 - $\Delta t = 10^{-5}$
 - $h = \frac{1}{128} \approx 0.0078$
 - $Re = 10^4$
-- $C_{diff} = \frac{10^{-5}}{10^4 \times (1/128)^2} \approx 0.0164 < 0.25$ ✓
+- $C_{diff} = \frac{10^{-5}}{10^4 \times (1/128)^2} \approx 1.64\times10^{-5} < 0.25$ ✓
 
 ### Convergence Criterion
 $$\max_{i,j} |\omega_{i,j}^{n+1} - \omega_{i,j}^n| < 10^{-8}$$
@@ -193,11 +193,11 @@ $$\max_{i,j} |\omega_{i,j}^{n+1} - \omega_{i,j}^n| < 10^{-8}$$
 - Other walls: $u = v = 0$ (no-slip)
 - Reynolds number: $Re = 10,000$
 
-**Expected Results at $(x=0.5, y=0.5)$:**
-- $u = 0.03111$
-- $v = 0.00831$
+**Centre-point consistency check:**
 
-**Grid Resolution:** $129 \times 129$ (matching Ghia et al.)
+For the symmetric square cavity, $v(0.5,y)=0$. Use the original centreline tables, coordinates, and symmetry as the benchmark rather than a single copied centre-point value; some widely copied Ghia table entries contain typographical errors.
+
+**Grid Resolution:** $129\times129$ corresponds to $h=1/128$ in this implementation. Ghia et al. report a $129\times129$ example for $Re=1000$ and high-Re meshes up to $257\times257$.
 
 **References:**
 - Ghia, U., Ghia, K.N., Shin, C.T. (1982). "High-Re solutions for incompressible flow using the Navier-Stokes equations and a multigrid method." *Journal of Computational Physics*, 48(3), 387-411.

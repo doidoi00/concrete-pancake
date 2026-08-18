@@ -25,7 +25,7 @@ Your public key has been saved in C:\Users\username/.ssh/id_ed25519.pub
 The key fingerprint is:
 SHA256: your_ssh_public_key your_email@example.com
 ```
-아래 나온 `key fingerprint` 를 복사해둔다.
+GitHub에 등록할 것은 `key fingerprint`가 아니라 공개키 파일(`id_ed25519.pub`)의 **전체 한 줄**이다. 개인키 파일(`id_ed25519`)은 절대 공유하거나 업로드하면 안 된다.
 
 ---
 ## ssh-agent에 SSH 키 추가하기
@@ -34,8 +34,7 @@ SHA256: your_ssh_public_key your_email@example.com
 먼저 ssh-agent를 실행한다. 관리자 권한이 있는 Powershell에 ssh-agent 시작 옵션을 지정하기 위해 아래 텍스트를 친다.
 
 ```
-Get-Service -Name ssh-agent | Set-Service -StartupType Manual    //ssh-agent 수동 시작
-Get-Service -Name ssh-agent | Set-Service -StartupType Automatic    //ssh-agent 자동 시작
+Get-Service -Name ssh-agent | Set-Service -StartupType Manual    # ssh-agent 수동 시작
 ```
 
 다음  `ssh-agent` 를 시작한다.
@@ -53,16 +52,20 @@ ssh-add c:/Users/username/.ssh/id_ed25519
 ---
 ## Github에 SSH 퍼블릭 키 추가하기
 
-아까 터미널에 뜬 퍼블릭 키를 Github에 저장하면 된다. Settings > SSH and GPG Keys 에서 추가하면 된다. 
-<img src ="settings1.png" align="center"/>
+아래 명령으로 공개키 파일의 전체 내용을 복사한 뒤 GitHub에 등록한다. Settings > SSH and GPG Keys 에서 추가하면 된다.
+
+```powershell
+Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub"
+```
+<img src ="../Attached Files/settings1.png" align="center"/>
 우측 상단 프로필 사진을 클릭해서 Settings에 들어간다. 
-<img src ="settings.png" align="center"/>
+<img src ="../Attached Files/settings.png" align="center"/>
 이제 SSH-GPG key에 진입해서 우측 상단 `New SSH key` 를 누른다. 
-<img src="register.png" align="center"/>
+<img src="../Attached Files/register.png" align="center"/>
 여기서 Title에 Key 이름을 입력하고, Key type 중에 용도에 따라 `Authentication Key` 와 `Signing Key` 를 선택한다. 
 
-- `Authentication Key` : SSH 인증(git push, git pull, git commit -m "")을 위한 Key
-- `Signing Key` : Commit(git commit -s "")의 서명(Signing)에 사용하는 Key
+- `Authentication Key` : SSH 원격 주소를 사용하는 clone, fetch, pull, push 인증용 Key
+- `Signing Key` : SSH 커밋/태그 서명용 Key. `git commit -S`가 서명 옵션이며, `git commit -s`는 Signed-off-by 행만 추가한다.
 
 보통은 `Authentication Key` 를 등록하면 아무 문제없이 작동했다.
 
@@ -72,7 +75,7 @@ ssh-add c:/Users/username/.ssh/id_ed25519
 이제 SSH가 잘 설정되었는지 확인하기 위해 Powershell에 아래 텍스트를 입력한다.
 
 ```
-ssg -T git@github.com
+ssh -T git@github.com
 ```
 
 만약 잘 설정되었다면 다음과 같은 출력이 나올 것이다.
@@ -89,4 +92,4 @@ Hi username! You've successfully authenticated, but GitHub does not provide shel
 > Are you sure you want to continue connecting (yes/no)?
 ```
 
-간단하게 yes를 눌러주면 연결이 완료된다.
+표시된 fingerprint가 [GitHub의 공식 SSH host-key fingerprint](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints)와 일치하는지 먼저 확인한다. 일치할 때만 `yes`를 입력해 연결을 완료한다.
